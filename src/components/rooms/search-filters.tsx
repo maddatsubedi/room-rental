@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/custom/Input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -87,14 +87,14 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
     <div className="bg-white rounded-2xl shadow-lg p-4 mb-8">
       <div className="flex flex-col md:flex-row gap-4">
         {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <div className="flex-1">
           <Input
             placeholder="Search rooms..."
             value={filters.search}
-            onChange={(e) => updateFilters({ search: e.target.value })}
-            className="pl-10 h-12 border-gray-200"
-            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters({ search: e.target.value })}
+            className="h-12 border-gray-200"
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && applyFilters()}
+            leftIcon={<Search className="h-5 w-5" />}
           />
         </div>
 
@@ -161,7 +161,7 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
                       type="number"
                       placeholder="Min"
                       value={filters.minPrice}
-                      onChange={(e) => updateFilters({ minPrice: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters({ minPrice: e.target.value })}
                     />
                   </div>
                   <div className="flex-1">
@@ -169,7 +169,7 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
                       type="number"
                       placeholder="Max"
                       value={filters.maxPrice}
-                      onChange={(e) => updateFilters({ maxPrice: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters({ maxPrice: e.target.value })}
                     />
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
                   type="number"
                   placeholder="Number of guests"
                   value={filters.minGuests}
-                  onChange={(e) => updateFilters({ minGuests: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters({ minGuests: e.target.value })}
                 />
               </div>
 

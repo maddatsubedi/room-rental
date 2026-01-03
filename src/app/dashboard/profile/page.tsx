@@ -6,8 +6,7 @@ import { useSession } from "next-auth/react";
 import { UserLayout } from "@/components/layout/user-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/custom/Input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
@@ -103,75 +102,53 @@ export default function ProfilePage() {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Avatar URL */}
-              <div className="space-y-2">
-                <Label htmlFor="image">Profile Image URL</Label>
-                <Input
-                  id="image"
-                  name="image"
-                  placeholder="https://example.com/avatar.jpg"
-                  value={formData.image}
-                  onChange={handleChange}
-                />
-                <p className="text-xs text-gray-500">
-                  Enter a URL for your profile picture
-                </p>
-              </div>
+              <Input
+                label="Profile Image URL"
+                id="image"
+                name="image"
+                placeholder="https://example.com/avatar.jpg"
+                value={formData.image}
+                onChange={handleChange}
+                description="Enter a URL for your profile picture"
+              />
 
               <Separator />
 
               {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="John Doe"
-                    className="pl-10"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
+              <Input
+                label="Full Name"
+                id="name"
+                name="name"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={handleChange}
+                leftIcon={<User className="h-4 w-4" />}
+              />
 
               {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={handleChange}
-                    disabled
-                  />
-                </div>
-                <p className="text-xs text-gray-500">
-                  Email cannot be changed
-                </p>
-              </div>
+              <Input
+                label="Email Address"
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                disabled
+                description="Email cannot be changed"
+                leftIcon={<Mail className="h-4 w-4" />}
+              />
 
               {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+1 (555) 000-0000"
-                    className="pl-10"
-                    value={formData.phone}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+              <Input
+                label="Phone Number"
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="+1 (555) 000-0000"
+                value={formData.phone}
+                onChange={handleChange}
+                leftIcon={<Phone className="h-4 w-4" />}
+              />
 
               <Separator />
 

@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/custom/Input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Building2, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
@@ -67,24 +66,18 @@ export default function LoginPage() {
           )}
 
           <form action={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+            <Input
+              label="Email"
+              id="email"
+              name="email"
+              type="email"
+              placeholder="name@example.com"
+              leftIcon={<Mail className="h-4 w-4" />}
+            />
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <label htmlFor="password" className="text-sm font-medium text-secondary-foreground">Password</label>
                 <Link
                   href="/auth/forgot-password"
                   className="text-sm text-violet-600 hover:text-violet-700"
@@ -92,17 +85,13 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className="pl-10"
-                  required
-                />
-              </div>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                leftIcon={<Lock className="h-4 w-4" />}
+              />
             </div>
 
             <Button

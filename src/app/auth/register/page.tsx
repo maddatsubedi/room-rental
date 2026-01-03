@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/custom/Input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -89,67 +89,41 @@ export default function RegisterPage() {
           </div>
 
           <form action={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+            <Input
+              label="Full Name"
+              id="name"
+              name="name"
+              type="text"
+              placeholder="John Doe"
+              leftIcon={<User className="h-4 w-4" />}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
+            <Input
+              label="Email"
+              id="email"
+              name="email"
+              type="email"
+              placeholder="name@example.com"
+              leftIcon={<Mail className="h-4 w-4" />}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className="pl-10"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
+            <Input
+              label="Password"
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              leftIcon={<Lock className="h-4 w-4" />}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  className="pl-10"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
+            <Input
+              label="Confirm Password"
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              leftIcon={<Lock className="h-4 w-4" />}
+            />
 
             <Button
               type="submit"

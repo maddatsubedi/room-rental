@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { LandlordLayout } from "@/components/layout/landlord-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft, Plus, X, ImagePlus } from "lucide-react";
 import Link from "next/link";
@@ -49,9 +50,13 @@ const AMENITIES = [
   "Fire Extinguisher",
 ];
 
-export default function NewRoomPage() {
+export default function EditRoomPage() {
   const router = useRouter();
+  const params = useParams();
+  const roomId = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -70,13 +75,57 @@ export default function NewRoomPage() {
     amenities: [] as string[],
     images: [] as string[],
     featured: false,
+    status: "AVAILABLE",
   });
   const [imageUrl, setImageUrl] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    const fetchRoom = async () => {
+      try {
+        const response = await fetch(`/api/rooms/${roomId}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch room");
+        }
+
+        const room = data.data;
+        setFormData({
+          title: room.title || "",
+          description: room.description || "",
+          type: room.type || "SINGLE",
+          price: room.price?.toString() || "",
+          address: room.address || "",
+          city: room.city || "",
+          state: room.state || "",
+          zipCode: room.zipCode || "",
+          country: room.country || "USA",
+          location: room.location || "",
+          size: room.size?.toString() || "",
+          bedrooms: room.bedrooms?.toString() || "1",
+          bathrooms: room.bathrooms?.toString() || "1",
+          maxGuests: room.maxGuests?.toString() || "2",
+          amenities: room.amenities || [],
+          images: room.images || [],
+          featured: room.featured || false,
+          status: room.status || "AVAILABLE",
+        });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to load room");
+        router.push("/landlord/rooms");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    if (roomId) {
+      fetchRoom();
+    }
+  }, [roomId, router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear field error when user starts typing
     if (errors[e.target.name]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
     }
@@ -118,8 +167,8 @@ export default function NewRoomPage() {
     setErrors({});
 
     try {
-      const response = await fetch("/api/rooms", {
-        method: "POST",
+      const response = await fetch(`/api/rooms/${roomId}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
@@ -135,7 +184,6 @@ export default function NewRoomPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle field-level validation errors
         if (data.error && typeof data.error === "object") {
           const fieldErrors: Record<string, string> = {};
           for (const [field, messages] of Object.entries(data.error)) {
@@ -147,10 +195,10 @@ export default function NewRoomPage() {
           toast.error("Please fix the validation errors");
           return;
         }
-        throw new Error(typeof data.error === "string" ? data.error : "Failed to create room");
+        throw new Error(typeof data.error === "string" ? data.error : "Failed to update room");
       }
 
-      toast.success("Room created successfully!");
+      toast.success("Room updated successfully!");
       router.push("/landlord/rooms");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");
@@ -158,6 +206,36 @@ export default function NewRoomPage() {
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <LandlordLayout>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <Card className="border-0 shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </LandlordLayout>
+    );
+  }
 
   return (
     <LandlordLayout>
@@ -170,8 +248,8 @@ export default function NewRoomPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Add New Room</h1>
-            <p className="text-gray-500">Create a new room listing</p>
+            <h1 className="text-3xl font-bold">Edit Room</h1>
+            <p className="text-gray-500">Update your room listing</p>
           </div>
         </div>
 
@@ -180,7 +258,7 @@ export default function NewRoomPage() {
           <Card className="border-0 shadow-sm">
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Provide the basic details about your room</CardDescription>
+              <CardDescription>Update the basic details about your room</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
@@ -236,6 +314,22 @@ export default function NewRoomPage() {
                   error={errors.price}
                 />
               </div>
+
+              <Input label="Status" wrapperOnly error={errors.status}>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AVAILABLE">Available</SelectItem>
+                    <SelectItem value="OCCUPIED">Occupied</SelectItem>
+                    <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Input>
             </CardContent>
           </Card>
 
@@ -493,10 +587,10 @@ export default function NewRoomPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                "Create Room"
+                "Save Changes"
               )}
             </Button>
           </div>
@@ -505,4 +599,3 @@ export default function NewRoomPage() {
     </LandlordLayout>
   );
 }
-
