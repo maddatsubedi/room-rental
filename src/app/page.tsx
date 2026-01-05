@@ -101,7 +101,7 @@ export default async function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen">
+      <section className="relative min-h-[90vh] flex items-center">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
@@ -111,74 +111,112 @@ export default async function HomePage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-linear-to-r from-stone-950/80 via-stone-900/60 to-stone-900/40" />
+          <div className="absolute inset-0 bg-stone-950/70" />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col">
-          <div className="flex-1 flex items-center">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
-              <div className="max-w-2xl">
-                {/* Main Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-white leading-[1.1] tracking-tight">
-                  Find your next
-                  <span className="block mt-2 text-white/80">place to stay</span>
+        <div className="relative z-10 w-full pt-24">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              {/* Left Column - Text */}
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-sm text-white/80">{stats.roomCount}+ spaces available now</span>
+                </div>
+
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif text-white leading-[1.05] tracking-tight">
+                  Find where
+                  <span className="block text-white/60">you belong</span>
                 </h1>
 
-                {/* Description */}
-                <p className="mt-6 text-base sm:text-lg text-white/60 max-w-md leading-relaxed">
-                  Discover unique spaces from verified hosts. Book with confidence, 
-                  stay with comfort.
+                <p className="mt-8 text-lg text-white/50 max-w-md leading-relaxed">
+                  Discover curated spaces from verified hosts. From cozy studios to luxury apartments — your next chapter starts here.
                 </p>
 
-                {/* CTA Buttons */}
-                <div className="mt-10 flex flex-col sm:flex-row gap-3">
-                  <Link href="/rooms">
-                    <Button
-                      size="lg"
-                      className="h-12 px-8 bg-white text-stone-900 hover:bg-stone-100 font-medium rounded-full"
-                    >
-                      Browse spaces
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/auth/register?role=LANDLORD">
-                    <Button
-                      size="lg"
-                      variant="ghost"
-                      className="h-12 px-8 text-white hover:bg-white/10 font-medium rounded-full border border-white/20"
-                    >
-                      Become a host
-                    </Button>
-                  </Link>
+                {/* Search Box */}
+                <div className="mt-10 p-2 bg-white rounded-2xl shadow-2xl">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1 relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
+                      <input
+                        type="text"
+                        placeholder="Where are you going?"
+                        className="w-full pl-12 pr-4 py-4 text-stone-900 placeholder:text-stone-400 focus:outline-none rounded-xl bg-stone-50 focus:bg-white transition-colors"
+                      />
+                    </div>
+                    <Link href="/rooms">
+                      <Button
+                        size="lg"
+                        className="h-14 px-8 bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl w-full sm:w-auto"
+                      >
+                        Search
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="mt-10 flex flex-wrap items-center gap-8">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-white/40" />
+                    <span className="text-sm text-white/50">Verified hosts</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-white/40" />
+                    <span className="text-sm text-white/50">Instant booking</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-5 w-5 text-white/40" />
+                    <span className="text-sm text-white/50">Quality assured</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Bottom Stats Bar */}
-          <div className="border-t border-white/10 bg-black/20 backdrop-blur-sm">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8 py-6">
-              <div className="flex flex-wrap items-center justify-between gap-6">
-                <div className="flex items-center gap-8 sm:gap-12">
-                  <div className="text-center sm:text-left">
-                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.roomCount}+</div>
-                    <div className="text-xs sm:text-sm text-white/50">Spaces</div>
+              {/* Right Column - Stats Cards */}
+              <div className="hidden lg:block">
+                <div className="relative">
+                  {/* Floating Stats Cards */}
+                  <div className="absolute -top-8 right-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
+                    <div className="text-4xl font-serif text-white mb-1">{stats.bookingCount}+</div>
+                    <div className="text-sm text-white/60">Happy stays</div>
                   </div>
-                  <div className="h-8 w-px bg-white/10 hidden sm:block" />
-                  <div className="text-center sm:text-left">
-                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.userCount}+</div>
-                    <div className="text-xs sm:text-sm text-white/50">Guests</div>
+                  
+                  <div className="absolute top-32 -right-4 bg-white rounded-2xl p-6 shadow-2xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-stone-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-serif text-stone-900">{stats.userCount}+</div>
+                        <div className="text-xs text-stone-500">Active members</div>
+                      </div>
+                    </div>
+                    <div className="flex -space-x-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-stone-200 border-2 border-white" />
+                      ))}
+                      <div className="w-8 h-8 rounded-full bg-stone-900 border-2 border-white flex items-center justify-center">
+                        <span className="text-xs text-white">+</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-8 w-px bg-white/10 hidden sm:block" />
-                  <div className="text-center sm:text-left">
-                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.bookingCount}+</div>
-                    <div className="text-xs sm:text-sm text-white/50">Bookings</div>
+
+                  <div className="absolute top-64 left-8 bg-emerald-500 rounded-2xl p-5 shadow-2xl">
+                    <div className="flex items-center gap-3 text-white">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <Star className="h-5 w-5 fill-white text-white" />
+                      </div>
+                      <div>
+                        <div className="text-lg font-medium">4.9 Rating</div>
+                        <div className="text-sm text-white/80">Guest satisfaction</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="hidden lg:flex items-center gap-3 text-sm text-white/50">
-                  <Shield className="h-4 w-4" />
-                  <span>Verified properties only</span>
+
+                  {/* Decorative Background */}
+                  <div className="w-80 h-80 rounded-full border border-white/10 mx-auto" />
                 </div>
               </div>
             </div>
