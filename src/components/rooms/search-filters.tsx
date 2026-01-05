@@ -84,17 +84,17 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
     filters.amenities.length > 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 mb-8">
-      <div className="flex flex-col md:flex-row gap-4">
+    <div className="bg-white border border-stone-200 rounded-xl p-4">
+      <div className="flex flex-col md:flex-row gap-3">
         {/* Search Input */}
         <div className="flex-1">
           <Input
             placeholder="Search rooms..."
             value={filters.search}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilters({ search: e.target.value })}
-            className="h-12 border-gray-200"
+            className="h-11 border-stone-200"
             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && applyFilters()}
-            leftIcon={<Search className="h-5 w-5" />}
+            leftIcon={<Search className="h-4 w-4" />}
           />
         </div>
 
@@ -103,8 +103,8 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
           value={filters.city}
           onValueChange={(value) => updateFilters({ city: value })}
         >
-          <SelectTrigger className="w-full md:w-48 h-12">
-            <SelectValue placeholder="Select city" />
+          <SelectTrigger className="w-full md:w-44 h-11 border-stone-200">
+            <SelectValue placeholder="City" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Cities</SelectItem>
@@ -121,8 +121,8 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
           value={filters.type}
           onValueChange={(value) => updateFilters({ type: value })}
         >
-          <SelectTrigger className="w-full md:w-48 h-12">
-            <SelectValue placeholder="Room type" />
+          <SelectTrigger className="w-full md:w-44 h-11 border-stone-200">
+            <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
@@ -137,11 +137,11 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
         {/* More Filters */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="h-12 gap-2">
+            <Button variant="outline" className="h-11 gap-2 border-stone-200 text-stone-600 hover:text-stone-900">
               <SlidersHorizontal className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
-                <span className="bg-violet-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-stone-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   !
                 </span>
               )}
@@ -225,7 +225,7 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
         <Button
           onClick={applyFilters}
           disabled={isPending}
-          className="h-12 px-8 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+          className="h-11 px-6 bg-stone-900 hover:bg-stone-800"
         >
           {isPending ? "Searching..." : "Search"}
         </Button>
@@ -233,27 +233,27 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
 
       {/* Active Filters */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
-          <span className="text-sm text-gray-500">Active filters:</span>
+        <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-stone-200">
+          <span className="text-sm text-stone-500">Active:</span>
           {filters.city && (
-            <Badge city={filters.city} onRemove={() => updateFilters({ city: "" })} />
+            <FilterBadge label={filters.city} onRemove={() => updateFilters({ city: "" })} />
           )}
           {filters.type && (
-            <Badge
-              city={ROOM_TYPES.find((t) => t.value === filters.type)?.label || filters.type}
+            <FilterBadge
+              label={ROOM_TYPES.find((t) => t.value === filters.type)?.label || filters.type}
               onRemove={() => updateFilters({ type: "" })}
             />
           )}
           {filters.minPrice && (
-            <Badge city={`Min: $${filters.minPrice}`} onRemove={() => updateFilters({ minPrice: "" })} />
+            <FilterBadge label={`Min: $${filters.minPrice}`} onRemove={() => updateFilters({ minPrice: "" })} />
           )}
           {filters.maxPrice && (
-            <Badge city={`Max: $${filters.maxPrice}`} onRemove={() => updateFilters({ maxPrice: "" })} />
+            <FilterBadge label={`Max: $${filters.maxPrice}`} onRemove={() => updateFilters({ maxPrice: "" })} />
           )}
           {filters.amenities.map((amenity) => (
-            <Badge
+            <FilterBadge
               key={amenity}
-              city={amenity}
+              label={amenity}
               onRemove={() =>
                 updateFilters({
                   amenities: filters.amenities.filter((a) => a !== amenity),
@@ -265,7 +265,7 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           >
             Clear all
           </Button>
@@ -275,11 +275,11 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
   );
 }
 
-function Badge({ city, onRemove }: { city: string; onRemove: () => void }) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-sm">
-      {city}
-      <button onClick={onRemove} className="hover:bg-violet-200 rounded-full p-0.5">
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 text-sm">
+      {label}
+      <button onClick={onRemove} className="hover:bg-stone-200 rounded-full p-0.5">
         <X className="h-3 w-3" />
       </button>
     </span>

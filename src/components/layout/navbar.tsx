@@ -3,28 +3,37 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Menu, User, LogOut, Settings, Building2, LayoutDashboard } from "lucide-react";
+import { Menu, User, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Browse Rooms", href: "/rooms", icon: Building2 },
+  { name: "Home", href: "/" },
+  { name: "Explore", href: "/rooms" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const getDashboardLink = () => {
     if (!session?.user) return "/dashboard";
@@ -39,157 +48,218 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${
+        scrolled
+          ? "bg-white shadow-sm"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className={`flex items-center justify-between transition-all duration-500 ${
+          scrolled ? "h-16" : "h-24"
+        }`}>
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 transition-shadow">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <span className="hidden font-bold text-xl sm:inline-block">
-              <span className="bg-linear-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Rent</span>
-              <span className="text-gray-800">Space</span>
+            <span className={`font-serif text-2xl tracking-tight transition-all duration-500 ${
+              scrolled ? "text-stone-900" : "text-white"
+            }`}>
+              Rent<span className="font-normal italic">Space</span>
             </span>
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition-all ${
-                    isActive
-                      ? "bg-violet-100 text-violet-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
 
-        <div className="flex items-center gap-4">
-          {status === "loading" ? (
-            <div className="h-10 w-24 animate-pulse rounded-full bg-gray-200" />
-          ) : session?.user ? (
-            <div className="flex items-center gap-3">
-              <Link href={getDashboardLink()}>
-                <Button variant="ghost" size="sm" className="hidden sm:flex gap-2 rounded-full hover:bg-violet-50 hover:text-violet-600">
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </Button>
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full ring-2 ring-violet-100 hover:ring-violet-200 transition-all">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
-                      <AvatarFallback className="bg-linear-to-br from-violet-600 to-indigo-600 text-white font-medium">
-                        {getInitials(session.user.name || "U")}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 rounded-xl shadow-xl border-gray-100" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal p-4">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold leading-none">{session.user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user.email}
-                      </p>
-                      <span className="inline-flex items-center rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700 mt-1 w-fit">
-                        {session.user.role}
-                      </span>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={getDashboardLink()} className="cursor-pointer">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-600 focus:text-red-600"
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link href="/auth/login">
-                <Button variant="ghost" size="sm" className="rounded-full hover:bg-violet-50 hover:text-violet-600">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button size="sm" className="rounded-full bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          )}
-
-          {/* Mobile menu */}
-          <Sheet>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <nav className="flex flex-col gap-2 mt-8">
-                {navigation.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                        isActive
-                          ? "bg-violet-100 text-violet-700"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                      }`}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-                {session?.user && (
+          {/* Desktop Navigation - Center */}
+          <nav className="hidden md:flex items-center">
+            <div className={`flex items-center rounded-full px-1 py-1 transition-all duration-500 ${
+              scrolled ? "bg-stone-100" : "bg-white/10 backdrop-blur-sm"
+            }`}>
+              {navigation.map((item) => {
+                const isActive = pathname === item.href;
+                return (
                   <Link
-                    href={getDashboardLink()}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    key={item.name}
+                    href={item.href}
+                    className={`relative px-6 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                      scrolled
+                        ? isActive
+                          ? "bg-white text-stone-900 shadow-sm"
+                          : "text-stone-600 hover:text-stone-900"
+                        : isActive
+                          ? "bg-white/20 text-white"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
                   >
-                    <LayoutDashboard className="h-5 w-5" />
-                    Dashboard
+                    {item.name}
                   </Link>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* Right Section */}
+          <div className="flex items-center gap-3">
+            {status === "loading" ? (
+              <div className="h-9 w-20 animate-pulse rounded-full bg-stone-200/50" />
+            ) : session?.user ? (
+              <div className="flex items-center gap-2">
+                <Link href={getDashboardLink()} className="hidden sm:block">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`gap-2 rounded-full font-medium transition-all duration-300 ${
+                      scrolled
+                        ? "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className={`flex items-center gap-2 rounded-full p-0.5 pr-2.5 transition-all focus:outline-none ${
+                      scrolled ? "hover:bg-stone-100" : "hover:bg-white/10"
+                    }`}>
+                      <Avatar className="h-8 w-8 border-2 border-stone-200/50">
+                        <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
+                        <AvatarFallback className="bg-stone-800 text-white text-xs font-medium">
+                          {getInitials(session.user.name || "U")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown className={`h-3.5 w-3.5 transition-colors ${
+                        scrolled ? "text-stone-400" : "text-white/60"
+                      }`} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56 mt-2 rounded-xl border-stone-200 shadow-xl"
+                    align="end"
+                  >
+                    <div className="px-4 py-3 border-b border-stone-100">
+                      <p className="text-sm font-semibold text-stone-900">{session.user.name}</p>
+                      <p className="text-xs text-stone-500 mt-0.5">{session.user.email}</p>
+                    </div>
+                    <div className="py-2">
+                      <DropdownMenuItem asChild>
+                        <Link href={getDashboardLink()} className="cursor-pointer gap-3 py-2.5">
+                          <LayoutDashboard className="h-4 w-4 text-stone-500" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/profile" className="cursor-pointer gap-3 py-2.5">
+                          <User className="h-4 w-4 text-stone-500" />
+                          <span>Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer gap-3 py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/auth/login" className="hidden sm:block">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`rounded-full font-medium transition-all duration-300 ${
+                      scrolled
+                        ? "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    Sign in
+                  </Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button
+                    size="sm"
+                    className={`rounded-full font-medium px-5 transition-all duration-300 ${
+                      scrolled
+                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                        : "bg-white text-stone-900 hover:bg-stone-100"
+                    }`}
+                  >
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Menu */}
+            <Sheet>
+              <SheetTrigger asChild className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={scrolled ? "text-stone-900" : "text-white"}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80 border-l-stone-200">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center gap-3 mb-8 mt-4">
+                    <div className="h-10 w-10 rounded-xl bg-stone-900 flex items-center justify-center">
+                      <span className="text-white font-serif text-xl font-semibold">R</span>
+                    </div>
+                    <span className="font-serif text-xl text-stone-900">RentSpace</span>
+                  </div>
+                  <nav className="flex flex-col gap-1">
+                    {navigation.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className={`px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                            isActive
+                              ? "bg-stone-100 text-stone-900"
+                              : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                          }`}
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                    {session?.user && (
+                      <Link
+                        href={getDashboardLink()}
+                        className="px-4 py-3 text-base font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+                  </nav>
+                  <div className="mt-auto pb-8">
+                    {!session?.user && (
+                      <div className="flex flex-col gap-3">
+                        <Link href="/auth/login">
+                          <Button variant="outline" className="w-full">
+                            Sign in
+                          </Button>
+                        </Link>
+                        <Link href="/auth/register">
+                          <Button className="w-full bg-stone-900 hover:bg-stone-800">
+                            Get Started
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

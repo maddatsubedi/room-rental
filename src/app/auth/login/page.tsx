@@ -6,9 +6,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/custom/Input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Building2, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { login } from "@/actions/auth";
 import { toast } from "sonner";
 
@@ -42,30 +41,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-violet-600 via-indigo-600 to-purple-700 p-4">
-      <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
-      
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-0">
-        <CardHeader className="text-center space-y-4">
-          <Link href="/" className="inline-flex items-center justify-center gap-2 mx-auto">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-violet-600 to-indigo-600">
-              <Building2 className="h-7 w-7 text-white" />
-            </div>
+    <div className="min-h-screen bg-stone-50 flex">
+      {/* Left Side - Form */}
+      <div className="flex-1 flex flex-col justify-center px-6 py-12 lg:px-20 xl:px-24">
+        <div className="w-full max-w-sm mx-auto">
+          {/* Back Link */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-900 transition-colors mb-12"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
           </Link>
-          <div>
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 mb-10">
+            <div className="h-10 w-10 rounded-xl bg-stone-900 flex items-center justify-center">
+              <span className="text-white font-serif text-xl font-semibold">R</span>
+            </div>
+            <span className="font-serif text-xl text-stone-900">RentSpace</span>
+          </Link>
+
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-serif text-stone-900 mb-2">Welcome back</h1>
+            <p className="text-stone-500">
+              Sign in to continue to your account
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
+
+          {/* Error Alert */}
           {error && (
-            <Alert variant="destructive" className="mb-6">
+            <Alert variant="destructive" className="mb-6 border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <form action={handleSubmit} className="space-y-4">
+          {/* Form */}
+          <form action={handleSubmit} className="space-y-5">
             <Input
               label="Email"
               id="email"
@@ -77,10 +91,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-secondary-foreground">Password</label>
+                <label htmlFor="password" className="text-sm font-medium text-stone-700">
+                  Password
+                </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-violet-600 hover:text-violet-700"
+                  className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -96,7 +112,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+              className="w-full h-12 bg-stone-900 hover:bg-stone-800 text-white font-medium"
               disabled={isPending}
             >
               {isPending ? (
@@ -105,19 +121,41 @@ export default function LoginPage() {
                   Signing in...
                 </>
               ) : (
-                "Sign In"
+                "Sign in"
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">Don&apos;t have an account? </span>
-            <Link href="/auth/register" className="text-violet-600 hover:text-violet-700 font-medium">
-              Sign up
+          {/* Footer */}
+          <p className="mt-8 text-center text-sm text-stone-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/register" className="text-stone-900 font-medium hover:underline">
+              Create one
             </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Image */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200')",
+          }}
+        />
+        <div className="absolute inset-0 bg-stone-900/40" />
+        <div className="absolute inset-0 flex items-end p-12">
+          <div className="max-w-md">
+            <blockquote className="text-white/90 text-xl font-serif leading-relaxed mb-4">
+              &ldquo;The best platform for finding unique stays. Simple, clean, and trustworthy.&rdquo;
+            </blockquote>
+            <cite className="text-white/70 text-sm not-italic">
+              — Sarah J., Digital Nomad
+            </cite>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
