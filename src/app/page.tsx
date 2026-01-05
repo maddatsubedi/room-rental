@@ -169,17 +169,38 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              {/* Right Column - Stats Cards */}
+              {/* Right Column - Visual Stack */}
               <div className="hidden lg:block">
                 <div className="relative">
-                  {/* Floating Stats Cards */}
-                  <div className="absolute -top-8 right-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
-                    <div className="text-4xl font-serif text-white mb-1">{stats.bookingCount}+</div>
-                    <div className="text-sm text-white/60">Happy stays</div>
+                  {/* Feature card */}
+                  <div className="absolute -top-10 -left-4 w-72 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/15 shadow-2xl p-6">
+                    <div className="text-xs uppercase tracking-wide text-white/70 mb-2">Featured stay</div>
+                    <div className="text-2xl font-serif text-white leading-snug mb-3">Sunset Loft, NYC</div>
+                    <div className="flex items-center gap-3 text-sm text-white/70 mb-4">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        <span>Manhattan</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        <span>Up to 4</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-3xl font-serif text-white">$240</div>
+                        <div className="text-xs text-white/60">per night</div>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                        <span className="text-sm text-white">4.9</span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="absolute top-32 -right-4 bg-white rounded-2xl p-6 shadow-2xl">
-                    <div className="flex items-center gap-3 mb-3">
+
+                  {/* Community card */}
+                  <div className="absolute top-28 right-0 bg-white rounded-2xl p-6 shadow-2xl w-64">
+                    <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
                         <Users className="h-5 w-5 text-stone-600" />
                       </div>
@@ -188,18 +209,15 @@ export default async function HomePage() {
                         <div className="text-xs text-stone-500">Active members</div>
                       </div>
                     </div>
-                    <div className="flex -space-x-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-stone-200 border-2 border-white" />
-                      ))}
-                      <div className="w-8 h-8 rounded-full bg-stone-900 border-2 border-white flex items-center justify-center">
-                        <span className="text-xs text-white">+</span>
-                      </div>
+                    <div className="flex items-center justify-between text-sm text-stone-500">
+                      <span>Happy stays</span>
+                      <span className="text-stone-900 font-semibold">{stats.bookingCount}+</span>
                     </div>
                   </div>
 
-                  <div className="absolute top-64 left-8 bg-emerald-500 rounded-2xl p-5 shadow-2xl">
-                    <div className="flex items-center gap-3 text-white">
+                  {/* Rating badge */}
+                  <div className="absolute bottom-0 left-8 bg-emerald-500 rounded-2xl p-5 shadow-2xl text-white">
+                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                         <Star className="h-5 w-5 fill-white text-white" />
                       </div>
