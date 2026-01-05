@@ -136,7 +136,9 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
 
         {/* More Filters */}
         <Sheet>
-          <SheetTrigger asChild>
+          <SheetTrigger 
+          asChild
+          >
             <Button variant="outline" className="h-11 gap-2 border-stone-200 text-stone-600 hover:text-stone-900">
               <SlidersHorizontal className="h-4 w-4" />
               Filters
@@ -147,9 +149,13 @@ export function SearchFilters({ cities = [] }: SearchFiltersProps) {
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent className="overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
+          <SheetContent className="overflow-y-auto px-6">
+            <SheetHeader
+              className="px-0"
+            >
+              <SheetTitle>
+                Filters
+              </SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-6">
               {/* Price Range */}

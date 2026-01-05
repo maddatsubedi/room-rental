@@ -22,10 +22,18 @@ const navigation = [
   { name: "Explore", href: "/rooms" },
 ];
 
+// Pages that have dark hero sections and support transparent navbar
+const pagesWithHero = ["/", "/rooms", "/auth/login", "/auth/register"];
+
 export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [scrolled, setScrolled] = useState(false);
+
+  // Check if current page has a hero section that supports transparent navbar
+  const hasHero = pagesWithHero.some((page) => pathname === page);
+  // For colors: solid on pages without hero, or when scrolled
+  const showSolid = !hasHero || scrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,7 +58,7 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${
-        scrolled
+        showSolid
           ? "bg-white shadow-sm"
           : "bg-transparent"
       }`}
@@ -62,7 +70,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <span className={`font-serif text-2xl tracking-tight transition-all duration-500 ${
-              scrolled ? "text-stone-900" : "text-white"
+              showSolid ? "text-stone-900" : "text-white"
             }`}>
               Rent<span className="font-normal italic">Space</span>
             </span>
@@ -71,7 +79,7 @@ export function Navbar() {
           {/* Desktop Navigation - Center */}
           <nav className="hidden md:flex items-center">
             <div className={`flex items-center rounded-full px-1 py-1 transition-all duration-500 ${
-              scrolled ? "bg-stone-100" : "bg-white/10 backdrop-blur-sm"
+              showSolid ? "bg-stone-100" : "bg-white/10 backdrop-blur-sm"
             }`}>
               {navigation.map((item) => {
                 const isActive = pathname === item.href;
@@ -80,7 +88,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     className={`relative px-6 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                      scrolled
+                      showSolid
                         ? isActive
                           ? "bg-white text-stone-900 shadow-sm"
                           : "text-stone-600 hover:text-stone-900"
@@ -107,7 +115,7 @@ export function Navbar() {
                     variant="ghost"
                     size="sm"
                     className={`gap-2 rounded-full font-medium transition-all duration-300 ${
-                      scrolled
+                      showSolid
                         ? "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                         : "text-white/80 hover:text-white hover:bg-white/10"
                     }`}
@@ -119,7 +127,7 @@ export function Navbar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className={`flex items-center gap-2 rounded-full p-0.5 pr-2.5 transition-all focus:outline-none ${
-                      scrolled ? "hover:bg-stone-100" : "hover:bg-white/10"
+                      showSolid ? "hover:bg-stone-100" : "hover:bg-white/10"
                     }`}>
                       <Avatar className="h-8 w-8 border-2 border-stone-200/50">
                         <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
@@ -128,7 +136,7 @@ export function Navbar() {
                         </AvatarFallback>
                       </Avatar>
                       <ChevronDown className={`h-3.5 w-3.5 transition-colors ${
-                        scrolled ? "text-stone-400" : "text-white/60"
+                        showSolid ? "text-stone-400" : "text-white/60"
                       }`} />
                     </button>
                   </DropdownMenuTrigger>
@@ -172,7 +180,7 @@ export function Navbar() {
                     variant="ghost"
                     size="sm"
                     className={`rounded-full font-medium transition-all duration-300 ${
-                      scrolled
+                      showSolid
                         ? "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                         : "text-white/80 hover:text-white hover:bg-white/10"
                     }`}
@@ -184,7 +192,7 @@ export function Navbar() {
                   <Button
                     size="sm"
                     className={`rounded-full font-medium px-5 transition-all duration-300 ${
-                      scrolled
+                      showSolid
                         ? "bg-stone-900 hover:bg-stone-800 text-white"
                         : "bg-white text-stone-900 hover:bg-stone-100"
                     }`}
@@ -201,7 +209,7 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={scrolled ? "text-stone-900" : "text-white"}
+                  className={showSolid ? "text-stone-900" : "text-white"}
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
