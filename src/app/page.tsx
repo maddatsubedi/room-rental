@@ -116,7 +116,7 @@ export default async function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center">
+      <section className="relative min-h-dvh flex items-center">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
