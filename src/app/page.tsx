@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { HeroSearch } from "@/components/home/hero-search";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import {
@@ -63,6 +64,19 @@ async function getStats() {
   }
 }
 
+async function getCities(): Promise<string[]> {
+  try {
+    const cities = await prisma.room.findMany({
+      where: { isActive: true, status: "AVAILABLE" },
+      select: { city: true },
+      distinct: ["city"],
+    });
+    return cities.map((c) => c.city);
+  } catch {
+    return [];
+  }
+}
+
 const testimonials = [
   {
     name: "Sarah Johnson",
@@ -91,9 +105,10 @@ const testimonials = [
 ];
 
 export default async function HomePage() {
-  const [featuredRooms, stats] = await Promise.all([
+  const [featuredRooms, stats, cities] = await Promise.all([
     getFeaturedRooms(),
     getStats(),
+    getCities(),
   ]);
 
   return (
@@ -135,27 +150,7 @@ export default async function HomePage() {
                 </p>
 
                 {/* Search Box */}
-                <div className="mt-10 p-2 bg-white rounded-2xl shadow-2xl">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="flex-1 relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
-                      <input
-                        type="text"
-                        placeholder="Where are you going?"
-                        className="w-full pl-12 pr-4 py-4 text-stone-900 placeholder:text-stone-400 focus:outline-none rounded-xl bg-stone-50 focus:bg-white transition-colors"
-                      />
-                    </div>
-                    <Link href="/rooms">
-                      <Button
-                        size="lg"
-                        className="h-14 px-8 bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl w-full sm:w-auto"
-                      >
-                        Search
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                <HeroSearch cities={cities} />
 
                 {/* Trust Indicators */}
                 <div className="mt-10 flex flex-wrap items-center gap-8">
