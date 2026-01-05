@@ -101,8 +101,8 @@ export default async function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center">
-        {/* Background Image */}
+      <section className="relative h-screen">
+        {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920"
@@ -111,76 +111,78 @@ export default async function HomePage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-stone-900/60" />
+          <div className="absolute inset-0 bg-linear-to-r from-stone-950/80 via-stone-900/60 to-stone-900/40" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 py-32 md:py-40">
-          <div className="max-w-3xl">
-            {/* Subtle Tag */}
-            <div className="inline-flex items-center gap-2 mb-8">
-              <span className="h-px w-8 bg-white/40" />
-              <span className="text-sm text-white/70 tracking-widest uppercase">
-                Curated Stays
-              </span>
-            </div>
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="flex-1 flex items-center">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
+              <div className="max-w-2xl">
+                {/* Main Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-white leading-[1.1] tracking-tight">
+                  Find your next
+                  <span className="block mt-2 text-white/80">place to stay</span>
+                </h1>
 
-            {/* Main Headline */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-8 leading-[1.1] tracking-tight">
-              Discover spaces
-              <br />
-              <span className="text-stone-300">designed for living</span>
-            </h1>
+                {/* Description */}
+                <p className="mt-6 text-base sm:text-lg text-white/60 max-w-md leading-relaxed">
+                  Discover unique spaces from verified hosts. Book with confidence, 
+                  stay with comfort.
+                </p>
 
-            {/* Description */}
-            <p className="text-lg md:text-xl text-white/70 mb-12 max-w-xl leading-relaxed">
-              Hand-picked properties. Verified hosts. Exceptional experiences. 
-              Find your perfect temporary home.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/rooms">
-                <Button
-                  size="lg"
-                  className="h-14 px-8 bg-white text-stone-900 hover:bg-stone-100 font-medium text-base"
-                >
-                  Explore Spaces
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/auth/register?role=LANDLORD">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-14 px-8 border-white/30 text-white hover:bg-white/10 font-medium text-base"
-                >
-                  List Your Property
-                </Button>
-              </Link>
-            </div>
-
-            {/* Stats Row */}
-            <div className="flex flex-wrap gap-12 mt-16 pt-16 border-t border-white/10">
-              <div>
-                <div className="text-4xl font-serif text-white">{stats.roomCount}+</div>
-                <div className="text-sm text-white/50 mt-1">Properties</div>
-              </div>
-              <div>
-                <div className="text-4xl font-serif text-white">{stats.userCount}+</div>
-                <div className="text-sm text-white/50 mt-1">Happy Guests</div>
-              </div>
-              <div>
-                <div className="text-4xl font-serif text-white">{stats.bookingCount}+</div>
-                <div className="text-sm text-white/50 mt-1">Completed Stays</div>
+                {/* CTA Buttons */}
+                <div className="mt-10 flex flex-col sm:flex-row gap-3">
+                  <Link href="/rooms">
+                    <Button
+                      size="lg"
+                      className="h-12 px-8 bg-white text-stone-900 hover:bg-stone-100 font-medium rounded-full"
+                    >
+                      Browse spaces
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/auth/register?role=LANDLORD">
+                    <Button
+                      size="lg"
+                      variant="ghost"
+                      className="h-12 px-8 text-white hover:bg-white/10 font-medium rounded-full border border-white/20"
+                    >
+                      Become a host
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-          <span className="text-xs text-white/40 uppercase tracking-widest">Scroll</span>
-          <div className="w-px h-12 bg-linear-to-b from-white/40 to-transparent" />
+          {/* Bottom Stats Bar */}
+          <div className="border-t border-white/10 bg-black/20 backdrop-blur-sm">
+            <div className="mx-auto max-w-7xl px-6 lg:px-8 py-6">
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div className="flex items-center gap-8 sm:gap-12">
+                  <div className="text-center sm:text-left">
+                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.roomCount}+</div>
+                    <div className="text-xs sm:text-sm text-white/50">Spaces</div>
+                  </div>
+                  <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                  <div className="text-center sm:text-left">
+                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.userCount}+</div>
+                    <div className="text-xs sm:text-sm text-white/50">Guests</div>
+                  </div>
+                  <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                  <div className="text-center sm:text-left">
+                    <div className="text-2xl sm:text-3xl font-serif text-white">{stats.bookingCount}+</div>
+                    <div className="text-xs sm:text-sm text-white/50">Bookings</div>
+                  </div>
+                </div>
+                <div className="hidden lg:flex items-center gap-3 text-sm text-white/50">
+                  <Shield className="h-4 w-4" />
+                  <span>Verified properties only</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
