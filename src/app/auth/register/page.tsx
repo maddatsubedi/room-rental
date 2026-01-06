@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Mail, Lock, User, Loader2, AlertCircle, ArrowLeft, Home, Building } fro
 import { register } from "@/actions/auth";
 import { toast } from "sonner";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = searchParams.get("role") || "USER";
@@ -206,6 +206,22 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function RegisterLoading() {
+  return (
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterLoading />}>
+      <RegisterForm />
+    </Suspense>
   );
 }
 
