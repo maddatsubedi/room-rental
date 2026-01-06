@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { HeroSearch } from "@/components/home/hero-search";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
+import { formatCurrency } from "@/lib/utils";
 import {
   ArrowRight,
   Star,
@@ -79,27 +80,27 @@ async function getCities(): Promise<string[]> {
 
 const testimonials = [
   {
-    name: "Sarah Johnson",
-    role: "Remote Worker",
+    name: "Anisha Shrestha",
+    role: "Engineering Student",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
     content:
-      "The attention to detail in every listing gave me confidence to book. Found my perfect workspace apartment within days.",
+      "Found a perfect room near my college in Kathmandu. The whole process was smooth and the landlord is very helpful. Been living here for 6 months now!",
     rating: 5,
   },
   {
-    name: "Michael Chen",
-    role: "Photographer",
+    name: "Bikash Tamang",
+    role: "Software Developer",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     content:
-      "Clean interface, verified properties, and seamless booking. Exactly what I needed for my location shoots.",
+      "As someone who moved to Kathmandu for work, this platform made finding accommodation so easy. Great listings with honest descriptions.",
     rating: 5,
   },
   {
-    name: "Emily Rodriguez",
+    name: "Srijana Karki",
     role: "Property Owner",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
     content:
-      "As a host, the platform made managing my properties effortless. Professional presentation that attracts quality guests.",
+      "Managing my rental properties in Pokhara has never been easier. I get quality tenants and the platform handles everything professionally.",
     rating: 5,
   },
 ];
@@ -141,12 +142,12 @@ export default async function HomePage() {
                 </div>
 
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif text-white leading-[1.05] tracking-tight">
-                  Find where
-                  <span className="block text-white/60">you belong</span>
+                  Find your
+                  <span className="block text-white/60">perfect home</span>
                 </h1>
 
                 <p className="mt-8 text-lg text-white/50 max-w-md leading-relaxed">
-                  Discover curated spaces from verified hosts. From cozy studios to luxury apartments — your next chapter starts here.
+                  Discover affordable rooms and apartments across Nepal. Perfect for students, working professionals, and families looking for their next home.
                 </p>
 
                 {/* Search Box */}
@@ -174,22 +175,22 @@ export default async function HomePage() {
                 <div className="relative">
                   {/* Feature card */}
                   <div className="absolute -top-10 -left-4 w-72 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/15 shadow-2xl p-6">
-                    <div className="text-xs uppercase tracking-wide text-white/70 mb-2">Featured stay</div>
-                    <div className="text-2xl font-serif text-white leading-snug mb-3">Sunset Loft, NYC</div>
+                    <div className="text-xs uppercase tracking-wide text-white/70 mb-2">Featured Room</div>
+                    <div className="text-2xl font-serif text-white leading-snug mb-3">2BHK in Jhamsikhel</div>
                     <div className="flex items-center gap-3 text-sm text-white/70 mb-4">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        <span>Manhattan</span>
+                        <span>Lalitpur</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        <span>Up to 4</span>
+                        <span>Up to 3</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-3xl font-serif text-white">$240</div>
-                        <div className="text-xs text-white/60">per night</div>
+                        <div className="text-3xl font-serif text-white">Rs. 12,000</div>
+                        <div className="text-xs text-white/60">per month</div>
                       </div>
                       <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
                         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -210,7 +211,7 @@ export default async function HomePage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm text-stone-500">
-                      <span>Happy stays</span>
+                      <span>Happy tenants</span>
                       <span className="text-stone-900 font-semibold">{stats.bookingCount}+</span>
                     </div>
                   </div>
@@ -223,7 +224,7 @@ export default async function HomePage() {
                       </div>
                       <div>
                         <div className="text-lg font-medium">4.9 Rating</div>
-                        <div className="text-sm text-white/80">Guest satisfaction</div>
+                        <div className="text-sm text-white/80">Tenant satisfaction</div>
                       </div>
                     </div>
                   </div>
@@ -255,19 +256,19 @@ export default async function HomePage() {
                 icon: Shield,
                 title: "Verified Properties",
                 description:
-                  "Every listing is personally reviewed. Accurate photos, honest descriptions, and reliable hosts.",
+                  "Every listing is personally reviewed. Accurate photos, honest descriptions, and trustworthy landlords.",
               },
               {
                 icon: Clock,
-                title: "Instant Booking",
+                title: "Quick Move-in",
                 description:
-                  "No waiting for approvals. Book your perfect space in seconds with instant confirmation.",
+                  "No lengthy procedures. Find your room and move in quickly with simple booking process.",
               },
               {
                 icon: Star,
                 title: "Quality Assured",
                 description:
-                  "Our rigorous standards ensure exceptional stays. If something's not right, we make it right.",
+                  "Our standards ensure comfortable living. If something's not right, we help resolve it.",
               },
             ].map((feature) => (
               <div key={feature.title} className="group">
@@ -354,8 +355,8 @@ export default async function HomePage() {
                             </span>
                           </div>
                           <div className="text-right">
-                            <span className="text-lg font-medium text-stone-900">${room.price}</span>
-                            <span className="text-sm text-stone-500">/night</span>
+                            <span className="text-lg font-medium text-stone-900">{formatCurrency(room.price)}</span>
+                            <span className="text-sm text-stone-500">/month</span>
                           </div>
                         </div>
                       </div>
@@ -390,7 +391,7 @@ export default async function HomePage() {
             <div>
               <span className="text-sm text-stone-500 tracking-widest uppercase">How it works</span>
               <h2 className="text-3xl md:text-4xl font-serif text-stone-900 mt-4 mb-12">
-                Three simple steps to your perfect stay
+                Three simple steps to your new home
               </h2>
 
               <div className="space-y-10">
@@ -398,17 +399,17 @@ export default async function HomePage() {
                   {
                     step: "01",
                     title: "Search & Discover",
-                    description: "Browse our curated collection. Filter by location, amenities, and style to find your match.",
+                    description: "Browse rooms across Nepal. Filter by city, price range, and amenities to find your perfect match.",
                   },
                   {
                     step: "02",
-                    title: "Review & Compare",
-                    description: "Read verified reviews, explore detailed photos, and compare options at your own pace.",
+                    title: "Visit & Verify",
+                    description: "Schedule visits, meet landlords, and verify the property before making your decision.",
                   },
                   {
                     step: "03",
-                    title: "Book & Enjoy",
-                    description: "Secure your space with instant booking. Enjoy seamless check-in and exceptional stays.",
+                    title: "Book & Move In",
+                    description: "Confirm your booking, complete the paperwork, and move into your new home hassle-free.",
                   },
                 ].map((item) => (
                   <div key={item.step} className="flex gap-6">
@@ -432,7 +433,7 @@ export default async function HomePage() {
           <div className="text-center mb-16">
             <span className="text-sm text-stone-400 tracking-widest uppercase">Testimonials</span>
             <h2 className="text-3xl md:text-4xl font-serif text-white mt-4">
-              What our guests say
+              What our tenants say
             </h2>
           </div>
 

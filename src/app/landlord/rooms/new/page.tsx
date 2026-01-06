@@ -224,13 +224,13 @@ export default function NewRoomPage() {
                 </Input>
 
                 <Input
-                  label="Price per Night ($) *"
+                  label="Monthly Rent (Rs.) *"
                   id="price"
                   name="price"
                   type="number"
                   min="0"
-                  step="0.01"
-                  placeholder="99.00"
+                  step="100"
+                  placeholder="8000"
                   value={formData.price}
                   onChange={handleChange}
                   error={errors.price}
@@ -261,17 +261,17 @@ export default function NewRoomPage() {
                   label="City *"
                   id="city"
                   name="city"
-                  placeholder="New York"
+                  placeholder="Kathmandu"
                   value={formData.city}
                   onChange={handleChange}
                   error={errors.city}
                 />
 
                 <Input
-                  label="State *"
+                  label="Province *"
                   id="state"
                   name="state"
-                  placeholder="NY"
+                  placeholder="Bagmati"
                   value={formData.state}
                   onChange={handleChange}
                   error={errors.state}
@@ -280,10 +280,10 @@ export default function NewRoomPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="ZIP Code *"
+                  label="Postal Code *"
                   id="zipCode"
                   name="zipCode"
-                  placeholder="10001"
+                  placeholder="44600"
                   value={formData.zipCode}
                   onChange={handleChange}
                   error={errors.zipCode}
@@ -293,7 +293,7 @@ export default function NewRoomPage() {
                   label="Country"
                   id="country"
                   name="country"
-                  placeholder="USA"
+                  placeholder="Nepal"
                   value={formData.country}
                   onChange={handleChange}
                   error={errors.country}

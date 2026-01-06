@@ -6,9 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-NP", {
     style: "currency",
-    currency: "USD",
+    currency: "NPR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
@@ -38,16 +40,17 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
-export function calculateNights(checkIn: Date | string, checkOut: Date | string): number {
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
+export function calculateMonths(startDate: Date | string, endDate: Date | string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
   const diffTime = Math.abs(end.getTime() - start.getTime());
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(1, Math.ceil(days / 30)); // Minimum 1 month, round up partial months
 }
 
-export function calculateTotalPrice(pricePerNight: number, checkIn: Date | string, checkOut: Date | string): number {
-  const nights = calculateNights(checkIn, checkOut);
-  return pricePerNight * nights;
+export function calculateTotalPrice(pricePerMonth: number, startDate: Date | string, endDate: Date | string): number {
+  const months = calculateMonths(startDate, endDate);
+  return pricePerMonth * months;
 }
 
 export function getInitials(name: string): string {

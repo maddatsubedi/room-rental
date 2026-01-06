@@ -31,7 +31,7 @@ export function Footer() {
                 Stay in the loop
               </h3>
               <p className="text-stone-400 text-sm leading-relaxed">
-                Get notified about new listings, exclusive offers, and travel inspiration.
+                Get notified about new rooms, affordable deals, and housing tips.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
@@ -63,12 +63,12 @@ export function Footer() {
               <span className="font-serif text-xl text-white">RentSpace</span>
             </Link>
             <p className="text-stone-400 text-sm leading-relaxed mb-6 max-w-sm">
-              Discover exceptional spaces for your next stay. We connect travelers with 
-              verified properties and trusted hosts worldwide.
+              Find your perfect home in Nepal. We connect students and working professionals 
+              with verified rooms and trusted landlords across the country.
             </p>
             <div className="flex items-start gap-3 text-sm">
               <MapPin className="h-5 w-5 text-stone-500 shrink-0 mt-0.5" />
-              <span className="text-stone-400">New York, NY 10001</span>
+              <span className="text-stone-400">Kathmandu, Nepal 44600</span>
             </div>
           </div>
 

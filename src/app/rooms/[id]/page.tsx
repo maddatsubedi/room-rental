@@ -298,7 +298,7 @@ export default async function RoomDetailPage({
                 <CardContent className="p-6">
                   <div className="flex items-baseline gap-2 mb-6">
                     <span className="text-2xl font-serif text-stone-900">{formatCurrency(room.price)}</span>
-                    <span className="text-stone-500">/night</span>
+                    <span className="text-stone-500">/month</span>
                   </div>
 
                   {room.status === "AVAILABLE" ? (
@@ -331,7 +331,7 @@ export default async function RoomDetailPage({
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-2 text-stone-600">
                       <Calendar className="h-4 w-4" />
-                      <span>Free cancellation before check-in</span>
+                      <span>Flexible move-in dates</span>
                     </div>
                     <div className="flex items-center gap-2 text-stone-600">
                       <Check className="h-4 w-4 text-green-600" />

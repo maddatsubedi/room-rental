@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatCurrency, cn } from "@/lib/utils";
-import { format, differenceInDays, addDays } from "date-fns";
+import { format, differenceInDays, addMonths } from "date-fns";
 import { Calendar as CalendarIcon, Loader2, Users, Minus, Plus } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { toast } from "sonner";
@@ -27,26 +27,26 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
   const [loading, setLoading] = useState(false);
   const [guests, setGuests] = useState(1);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: addDays(new Date(), 1),
-    to: addDays(new Date(), 3),
+    from: addMonths(new Date(), 0),
+    to: addMonths(new Date(), 1),
   });
 
-  const nights = dateRange?.from && dateRange?.to
-    ? differenceInDays(dateRange.to, dateRange.from)
+  const months = dateRange?.from && dateRange?.to
+    ? Math.max(1, Math.ceil(differenceInDays(dateRange.to, dateRange.from) / 30))
     : 0;
 
-  const subtotal = price * nights;
-  const serviceFee = subtotal * 0.1;
+  const subtotal = price * months;
+  const serviceFee = subtotal * 0.05; // 5% service fee for long-term
   const total = subtotal + serviceFee;
 
   const handleSubmit = async () => {
     if (!dateRange?.from || !dateRange?.to) {
-      toast.error("Please select check-in and check-out dates");
+      toast.error("Please select move-in and move-out dates");
       return;
     }
 
-    if (nights < 1) {
-      toast.error("Minimum stay is 1 night");
+    if (months < 1) {
+      toast.error("Minimum rental period is 1 month");
       return;
     }
 
@@ -71,7 +71,7 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
         throw new Error(data.error || "Failed to create booking");
       }
 
-      toast.success("Booking created successfully!");
+      toast.success("Booking request sent successfully!");
       router.push("/dashboard/bookings");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");
@@ -84,7 +84,7 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
     <div className="space-y-4">
       {/* Date Range Picker */}
       <div className="space-y-2">
-        <Label>Check-in / Check-out</Label>
+        <Label>Move-in / Move-out</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -99,9 +99,9 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
                 dateRange.to ? (
                   <div className="flex flex-col items-start">
                     <span className="text-xs text-gray-500">
-                      {format(dateRange.from, "EEE, MMM d")} - {format(dateRange.to, "EEE, MMM d")}
+                      {format(dateRange.from, "MMM d, yyyy")} - {format(dateRange.to, "MMM d, yyyy")}
                     </span>
-                    <span className="text-sm">{nights} night{nights !== 1 ? "s" : ""}</span>
+                    <span className="text-sm">{months} month{months !== 1 ? "s" : ""}</span>
                   </div>
                 ) : (
                   format(dateRange.from, "PPP")
@@ -160,31 +160,31 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
 
       {/* Book Button */}
       <Button
-        className="w-full bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 h-12 text-lg"
+        className="w-full bg-stone-900 hover:bg-stone-800 h-12 text-lg"
         onClick={handleSubmit}
-        disabled={loading || nights < 1}
+        disabled={loading || months < 1}
       >
         {loading ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Booking...
+            Submitting...
           </>
         ) : (
-          "Reserve Now"
+          "Request Booking"
         )}
       </Button>
 
       {/* Price Breakdown */}
-      {nights > 0 && (
+      {months > 0 && (
         <div className="space-y-3 pt-4">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">
-              {formatCurrency(price)} × {nights} night{nights !== 1 ? "s" : ""}
+              {formatCurrency(price)} × {months} month{months !== 1 ? "s" : ""}
             </span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Service fee (10%)</span>
+            <span className="text-gray-600">Service fee (5%)</span>
             <span>{formatCurrency(serviceFee)}</span>
           </div>
           <div className="flex justify-between font-semibold text-lg pt-3 border-t">

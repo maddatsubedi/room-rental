@@ -101,7 +101,7 @@ export function RoomCard({ room }: RoomCardProps) {
             <span className="text-lg font-medium text-stone-900">
               {formatCurrency(room.price)}
             </span>
-            <span className="text-sm text-stone-500">/night</span>
+            <span className="text-sm text-stone-500">/month</span>
           </div>
         </div>
       </article>
