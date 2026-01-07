@@ -176,7 +176,7 @@ export default async function HomePage() {
                   {/* Feature card */}
                   <div className="absolute -top-10 -left-4 w-72 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/15 shadow-2xl p-6">
                     <div className="text-xs uppercase tracking-wide text-white/70 mb-2">Featured Room</div>
-                    <div className="text-2xl font-serif text-white leading-snug mb-3">2BHK in Jhamsikhel</div>
+                    <div className="text-2xl font-serif text-white leading-snug mb-3">2BHK in Bharatpur</div>
                     <div className="flex items-center gap-3 text-sm text-white/70 mb-4">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
