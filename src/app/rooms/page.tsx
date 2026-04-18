@@ -8,21 +8,25 @@ import { RoomCard } from "@/components/rooms/room-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
+import { bubbleSortRooms, type RoomSortOption } from "@/lib/algorithms";
 import { MapPin, ChevronLeft, ChevronRight, SlidersHorizontal, Search } from "lucide-react";
 
 interface SearchParams {
+  search?: string;
   city?: string;
   type?: string;
   minPrice?: string;
   maxPrice?: string;
   minGuests?: string;
   amenities?: string;
+  sort?: RoomSortOption;
   page?: string;
 }
 
 async function getRooms(searchParams: SearchParams) {
   const page = parseInt(searchParams.page || "1");
   const limit = 12;
+  const sortBy: RoomSortOption = searchParams.sort || "featured";
 
   const where: Record<string, unknown> = {
     isActive: true,
@@ -31,6 +35,13 @@ async function getRooms(searchParams: SearchParams) {
 
   if (searchParams.city && searchParams.city !== "all") {
     where.city = { contains: searchParams.city, mode: "insensitive" };
+  }
+  if (searchParams.search) {
+    where.OR = [
+      { title: { contains: searchParams.search, mode: "insensitive" } },
+      { location: { contains: searchParams.search, mode: "insensitive" } },
+      { city: { contains: searchParams.search, mode: "insensitive" } },
+    ];
   }
   if (searchParams.type && searchParams.type !== "all") {
     where.type = searchParams.type;
@@ -55,7 +66,7 @@ async function getRooms(searchParams: SearchParams) {
     where.amenities = { hasEvery: searchParams.amenities.split(",") };
   }
 
-  const [rooms, total, cities] = await Promise.all([
+  const [allRooms, total, cities] = await Promise.all([
     prisma.room.findMany({
       where,
       include: {
@@ -63,9 +74,7 @@ async function getRooms(searchParams: SearchParams) {
           select: { rating: true },
         },
       },
-      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      skip: (page - 1) * limit,
-      take: limit,
+      orderBy: [{ createdAt: "desc" }],
     }),
     prisma.room.count({ where }),
     prisma.room.findMany({
@@ -75,11 +84,16 @@ async function getRooms(searchParams: SearchParams) {
     }),
   ]);
 
+  const sortedRooms = bubbleSortRooms(allRooms, sortBy);
+  const startIndex = (page - 1) * limit;
+  const paginatedRooms = sortedRooms.slice(startIndex, startIndex + limit);
+
   return {
-    rooms,
+    rooms: paginatedRooms,
     total,
     totalPages: Math.ceil(total / limit),
     currentPage: page,
+    sortBy,
     cities: cities.map((c) => c.city),
   };
 }
@@ -107,7 +121,7 @@ export default async function RoomsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const { rooms, total, totalPages, currentPage, cities } = await getRooms(
+  const { rooms, total, totalPages, currentPage, cities, sortBy } = await getRooms(
     params
   );
 
@@ -116,8 +130,12 @@ export default async function RoomsPage({
     urlParams.set("page", page.toString());
     if (params.city) urlParams.set("city", params.city);
     if (params.type) urlParams.set("type", params.type);
+    if (params.search) urlParams.set("search", params.search);
     if (params.minPrice) urlParams.set("minPrice", params.minPrice);
     if (params.maxPrice) urlParams.set("maxPrice", params.maxPrice);
+    if (params.minGuests) urlParams.set("minGuests", params.minGuests);
+    if (params.amenities) urlParams.set("amenities", params.amenities);
+    if (sortBy) urlParams.set("sort", sortBy);
     return `/rooms?${urlParams.toString()}`;
   };
 
@@ -184,15 +202,27 @@ export default async function RoomsPage({
               </p>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <form method="get" className="flex items-center gap-3">
+            {params.search && <input type="hidden" name="search" value={params.search} />}
+            {params.city && <input type="hidden" name="city" value={params.city} />}
+            {params.type && <input type="hidden" name="type" value={params.type} />}
+            {params.minPrice && <input type="hidden" name="minPrice" value={params.minPrice} />}
+            {params.maxPrice && <input type="hidden" name="maxPrice" value={params.maxPrice} />}
+            {params.minGuests && <input type="hidden" name="minGuests" value={params.minGuests} />}
+            {params.amenities && <input type="hidden" name="amenities" value={params.amenities} />}
             <span className="text-sm text-stone-500">Sort by:</span>
-            <select className="px-4 py-2 rounded-lg border border-stone-200 bg-white text-sm focus:ring-2 focus:ring-stone-900 focus:border-transparent outline-none">
-              <option>Featured</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Newest</option>
+            <select
+              name="sort"
+              defaultValue={sortBy}
+              className="px-4 py-2 rounded-lg border border-stone-200 bg-white text-sm focus:ring-2 focus:ring-stone-900 focus:border-transparent outline-none"
+            >
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="newest">Newest</option>
             </select>
-          </div>
+            <Button type="submit" variant="outline" size="sm">Apply</Button>
+          </form>
         </div>
 
         {/* Rooms Grid */}

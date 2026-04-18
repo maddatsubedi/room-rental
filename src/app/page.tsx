@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { HeroSearch } from "@/components/home/hero-search";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
+import { getTopListings } from "@/lib/algorithms";
 import { formatCurrency } from "@/lib/utils";
 import {
   ArrowRight,
@@ -21,6 +22,7 @@ interface FeaturedRoom {
   id: string;
   title: string;
   price: number;
+  createdAt: Date;
   city: string;
   state: string;
   bedrooms: number;
@@ -33,20 +35,20 @@ interface FeaturedRoom {
 
 async function getFeaturedRooms(): Promise<FeaturedRoom[]> {
   try {
-    const rooms = await prisma.room.findMany({
+    const rooms: FeaturedRoom[] = await prisma.room.findMany({
       where: {
         status: "AVAILABLE",
         isActive: true,
       },
-      take: 6,
-      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 24,
+      orderBy: [{ createdAt: "desc" }],
       include: {
         reviews: {
           select: { rating: true },
         },
       },
     });
-    return rooms;
+    return getTopListings(rooms, 6);
   } catch {
     return [];
   }
@@ -72,7 +74,7 @@ async function getCities(): Promise<string[]> {
       select: { city: true },
       distinct: ["city"],
     });
-    return cities.map((c) => c.city);
+    return cities.map((c: { city: string }) => c.city);
   } catch {
     return [];
   }
