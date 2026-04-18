@@ -14,7 +14,7 @@ import {
 import { MoreHorizontal, Eye, Check, X, CircleCheckBig, Trash2, Loader2, DollarSign, Undo2 } from "lucide-react";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
-type PaymentMethod = "CASH" | "KHALTI";
+type PaymentMethod = "CASH" | "ESEWA";
 type PaymentStatus = "UNPAID" | "PAID" | "FAILED";
 
 interface AdminBookingActionsProps {

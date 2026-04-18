@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { isKhaltiConfigured, lookupKhaltiPayment } from "@/lib/khalti";
+import {
+  checkEsewaStatus,
+  decodeEsewaSuccessData,
+  isEsewaConfigured,
+  verifyEsewaSuccessPayload,
+} from "@/lib/esewa";
 
 const verifySchema = z.object({
-  pidx: z.string().min(1, "Payment id is required"),
+  data: z.string().min(1, "Callback payload is required"),
 });
 
 export async function POST(request: NextRequest) {
@@ -19,9 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!isKhaltiConfigured()) {
+    if (!isEsewaConfigured()) {
       return NextResponse.json(
-        { success: false, error: "Khalti is not configured on the server" },
+        { success: false, error: "eSewa is not configured on the server" },
         { status: 500 }
       );
     }
@@ -36,15 +41,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let callbackPayload;
+    try {
+      callbackPayload = decodeEsewaSuccessData(parsed.data.data);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid eSewa callback payload" },
+        { status: 400 }
+      );
+    }
+
+    if (!verifyEsewaSuccessPayload(callbackPayload)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid callback signature" },
+        { status: 400 }
+      );
+    }
+
+    const transactionUuid = callbackPayload.transaction_uuid;
+    const callbackAmount = callbackPayload.total_amount;
+    const productCode = callbackPayload.product_code;
+
+    if (!transactionUuid || !productCode || callbackAmount === undefined || callbackAmount === null) {
+      return NextResponse.json(
+        { success: false, error: "Missing required callback fields" },
+        { status: 400 }
+      );
+    }
+
     const paymentRecord = await prisma.payment.findFirst({
-      where: { providerPaymentId: parsed.data.pidx },
+      where: { providerPaymentId: transactionUuid },
       include: {
         booking: {
           select: {
             id: true,
             userId: true,
             status: true,
-            totalPrice: true,
             room: {
               select: {
                 landlordId: true,
@@ -74,10 +106,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payment = await lookupKhaltiPayment(parsed.data.pidx);
-    const expectedAmount = Math.round(paymentRecord.amount * 100);
+    const payment = await checkEsewaStatus({
+      productCode,
+      transactionUuid,
+      totalAmount: callbackAmount,
+    });
 
-    if (typeof payment.total_amount === "number" && payment.total_amount !== expectedAmount) {
+    const expectedAmount = Number(paymentRecord.amount.toFixed(2));
+    const providerAmount = Number(payment.total_amount);
+
+    if (!Number.isFinite(providerAmount)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid amount returned from eSewa" },
+        { status: 400 }
+      );
+    }
+
+    if (Math.abs(providerAmount - expectedAmount) > 0.009) {
       return NextResponse.json(
         { success: false, error: "Payment amount mismatch" },
         { status: 400 }
@@ -86,13 +131,18 @@ export async function POST(request: NextRequest) {
 
     const paymentStatus = payment.status.toUpperCase();
 
-    if (paymentStatus === "COMPLETED") {
+    if (paymentStatus === "COMPLETE") {
       const [updatedPayment, updatedBooking] = await prisma.$transaction([
         prisma.payment.update({
           where: { id: paymentRecord.id },
           data: {
             status: "PAID",
-            reference: payment.transaction_id || payment.tidx || paymentRecord.reference,
+            method: "ESEWA",
+            provider: "ESEWA",
+            reference:
+              payment.ref_id ||
+              callbackPayload.transaction_code ||
+              paymentRecord.reference,
             paidAt: paymentRecord.paidAt || new Date(),
           },
           select: {
@@ -128,7 +178,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (paymentStatus === "PENDING" || paymentStatus === "INITIATED") {
+    if (paymentStatus === "PENDING" || paymentStatus === "AMBIGUOUS") {
       await prisma.payment.update({
         where: { id: paymentRecord.id },
         data: {
@@ -168,7 +218,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("Khalti verify error:", error);
+    console.error("eSewa verify error:", error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Failed to verify payment" },
       { status: 500 }

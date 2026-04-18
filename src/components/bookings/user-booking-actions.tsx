@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { submitEsewaPaymentForm } from "@/lib/esewa-client";
 import { Loader2 } from "lucide-react";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
-type PaymentMethod = "CASH" | "KHALTI";
+type PaymentMethod = "CASH" | "ESEWA";
 type PaymentStatus = "UNPAID" | "PAID" | "FAILED";
 
 interface UserBookingActionsProps {
@@ -15,7 +16,7 @@ interface UserBookingActionsProps {
   status: BookingStatus;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
-  khaltiEnabled: boolean;
+  esewaEnabled: boolean;
 }
 
 export function UserBookingActions({
@@ -23,15 +24,15 @@ export function UserBookingActions({
   status,
   paymentMethod,
   paymentStatus,
-  khaltiEnabled,
+  esewaEnabled,
 }: UserBookingActionsProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const canCancel = status === "PENDING" || status === "CONFIRMED";
   const canPayNow =
-    khaltiEnabled &&
-    paymentMethod === "KHALTI" &&
+    esewaEnabled &&
+    paymentMethod === "ESEWA" &&
     paymentStatus !== "PAID" &&
     status !== "CANCELLED" &&
     status !== "COMPLETED";
@@ -63,10 +64,10 @@ export function UserBookingActions({
     }
   };
 
-  const payWithKhalti = async () => {
+  const payWithEsewa = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/payments/khalti/initiate", {
+      const response = await fetch("/api/payments/esewa/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId }),
@@ -75,12 +76,12 @@ export function UserBookingActions({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to start Khalti payment");
+        throw new Error(data.error || "Failed to start eSewa payment");
       }
 
-      window.location.href = data.data.paymentUrl;
+      submitEsewaPaymentForm(data.data.paymentUrl, data.data.formData);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to start Khalti payment");
+      toast.error(error instanceof Error ? error.message : "Failed to start eSewa payment");
       setLoading(false);
     }
   };
@@ -93,8 +94,8 @@ export function UserBookingActions({
     <div className="flex flex-col gap-2">
       {canPayNow && (
         <Button
-          className="w-full bg-[#5D2E8C] hover:bg-[#4A2570]"
-          onClick={payWithKhalti}
+          className="w-full bg-[#60BB46] hover:bg-[#4DA636]"
+          onClick={payWithEsewa}
           disabled={loading}
         >
           {loading ? (
@@ -103,7 +104,7 @@ export function UserBookingActions({
               Redirecting...
             </>
           ) : (
-            "Pay with Khalti"
+            "Pay with eSewa"
           )}
         </Button>
       )}

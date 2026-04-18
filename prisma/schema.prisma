@@ -31,7 +31,7 @@ enum BookingStatus {
 
 enum PaymentMethod {
   CASH
-  KHALTI
+  ESEWA
 }
 
 enum PaymentStatus {

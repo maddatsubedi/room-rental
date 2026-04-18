@@ -9,7 +9,7 @@ A modern, full-stack room rental platform built with Next.js 15, TypeScript, Tai
 ### 🏠 For Users
 - Browse and search rooms with advanced filters
 - Book rooms with date selection and guest count
-- Pay booking amounts securely with Khalti
+- Pay booking amounts securely with eSewa (sandbox)
 - View booking history and manage reservations
 - Write reviews for completed stays
 - Manage profile and account settings
@@ -75,9 +75,11 @@ A modern, full-stack room rental platform built with Next.js 15, TypeScript, Tai
    AUTH_SECRET="your-super-secret-key-here"
    AUTH_URL="http://localhost:3000"
    NEXT_PUBLIC_APP_URL="http://localhost:3000"
-   NEXT_PUBLIC_KHALTI_PUBLIC_KEY="your-khalti-public-key"
-   KHALTI_SECRET_KEY="your-khalti-secret-key"
-   KHALTI_GATEWAY_URL="https://a.khalti.com/api/v2/epayment"
+   NEXT_PUBLIC_ESEWA_ENABLED="true"
+   ESEWA_PRODUCT_CODE="EPAYTEST"
+   ESEWA_SECRET_KEY="8gBm/:&EnhH.1/q"
+   ESEWA_FORM_URL="https://rc-epay.esewa.com.np/api/epay/main/v2/form"
+   ESEWA_STATUS_URL="https://rc.esewa.com.np/api/epay/transaction/status/"
    ```
 
    Generate an AUTH_SECRET:
@@ -192,8 +194,8 @@ prisma/
 
 ### Payments
 - `PATCH /api/payments/[bookingId]` - Update payment status/method (Admin/Landlord)
-- `POST /api/payments/khalti/initiate` - Start Khalti payment for a booking
-- `POST /api/payments/khalti/verify` - Verify Khalti payment callback/transaction
+- `POST /api/payments/esewa/initiate` - Start eSewa sandbox payment for a booking
+- `POST /api/payments/esewa/verify` - Verify eSewa callback/status for a booking
 
 ### Statistics
 - `GET /api/admin/stats` - Admin dashboard statistics

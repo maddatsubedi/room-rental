@@ -53,7 +53,7 @@ export const bookingSchema = z.object({
   checkOut: z.coerce.date({ error: "Select a valid check-out date" }),
   guests: z.number().int().positive("Guests must be at least 1"),
   notes: z.string().trim().max(500, "Notes cannot exceed 500 characters").optional(),
-  paymentMethod: z.enum(["CASH", "KHALTI"]).optional().default("CASH"),
+  paymentMethod: z.enum(["CASH", "ESEWA"]).optional().default("CASH"),
 })
   .refine((data) => data.checkOut > data.checkIn, {
     message: "Check-out date must be after check-in date",

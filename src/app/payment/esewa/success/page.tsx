@@ -13,7 +13,7 @@ interface VerifyResult {
   error?: string;
 }
 
-function KhaltiSuccessContent() {
+function EsewaSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -21,27 +21,27 @@ function KhaltiSuccessContent() {
 
   useEffect(() => {
     const verify = async () => {
-      const pidx = searchParams.get("pidx");
+      const data = searchParams.get("data");
 
-      if (!pidx) {
-        setResult({ success: false, error: "Missing payment id in callback URL" });
+      if (!data) {
+        setResult({ success: false, error: "Missing payment callback data" });
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch("/api/payments/khalti/verify", {
+        const response = await fetch("/api/payments/esewa/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pidx }),
+          body: JSON.stringify({ data }),
         });
 
-        const data = await response.json();
+        const payload = await response.json();
 
         if (!response.ok) {
-          setResult({ success: false, error: data.error || "Payment verification failed" });
+          setResult({ success: false, error: payload.error || "Payment verification failed" });
         } else {
-          setResult({ success: true, message: data.message || "Payment verified" });
+          setResult({ success: true, message: payload.message || "Payment verified" });
           router.refresh();
         }
       } catch {
@@ -58,7 +58,7 @@ function KhaltiSuccessContent() {
     <div className="min-h-screen bg-stone-100 flex items-center justify-center px-4">
       <Card className="w-full max-w-md border-stone-200">
         <CardHeader>
-          <CardTitle className="text-center">Khalti Payment Status</CardTitle>
+          <CardTitle className="text-center">eSewa Payment Status</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {loading && (
@@ -98,7 +98,7 @@ function KhaltiSuccessContent() {
   );
 }
 
-export default function KhaltiSuccessPage() {
+export default function EsewaSuccessPage() {
   return (
     <Suspense
       fallback={
@@ -107,7 +107,7 @@ export default function KhaltiSuccessPage() {
         </div>
       }
     >
-      <KhaltiSuccessContent />
+      <EsewaSuccessContent />
     </Suspense>
   );
 }

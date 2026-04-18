@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { submitEsewaPaymentForm } from "@/lib/esewa-client";
 import { formatCurrency, cn } from "@/lib/utils";
 import { format, differenceInDays, addMonths } from "date-fns";
 import { Calendar as CalendarIcon, Loader2, Users, Minus, Plus } from "lucide-react";
@@ -24,7 +25,7 @@ interface BookingFormProps {
 
 export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
   const router = useRouter();
-  const khaltiEnabled = Boolean(process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY);
+  const esewaEnabled = process.env.NEXT_PUBLIC_ESEWA_ENABLED !== "false";
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [guests, setGuests] = useState(1);
@@ -39,7 +40,7 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
 
   const subtotal = price * months;
 
-  const handleSubmit = async (paymentMethod: "CASH" | "KHALTI") => {
+  const handleSubmit = async (paymentMethod: "CASH" | "ESEWA") => {
     setFormError(null);
 
     if (!dateRange?.from || !dateRange?.to) {
@@ -79,8 +80,8 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
         );
       }
 
-      if (paymentMethod === "KHALTI") {
-        const paymentResponse = await fetch("/api/payments/khalti/initiate", {
+      if (paymentMethod === "ESEWA") {
+        const paymentResponse = await fetch("/api/payments/esewa/initiate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bookingId: bookingData.data.id }),
@@ -89,11 +90,11 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
         const paymentData = await paymentResponse.json();
 
         if (!paymentResponse.ok) {
-          throw new Error(paymentData.error || "Failed to start Khalti payment");
+          throw new Error(paymentData.error || "Failed to start eSewa payment");
         }
 
-        toast.success("Redirecting to Khalti payment...");
-        window.location.href = paymentData.data.paymentUrl;
+        toast.success("Redirecting to eSewa payment...");
+        submitEsewaPaymentForm(paymentData.data.paymentUrl, paymentData.data.formData);
         return;
       }
 
@@ -204,10 +205,10 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
           </Button>
 
           <Button
-            className="w-full h-12 bg-[#5D2E8C] hover:bg-[#4A2570] text-white"
-            onClick={() => handleSubmit("KHALTI")}
-            disabled={loading || months < 1 || !khaltiEnabled}
-            title={!khaltiEnabled ? "Khalti is not configured yet" : "Pay with Khalti"}
+            className="w-full h-12 bg-[#60BB46] hover:bg-[#4DA636] text-white"
+            onClick={() => handleSubmit("ESEWA")}
+            disabled={loading || months < 1 || !esewaEnabled}
+            title={!esewaEnabled ? "eSewa is disabled" : "Pay with eSewa"}
           >
             {loading ? (
               <>
@@ -215,12 +216,12 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
                 Processing...
               </>
             ) : (
-              "Pay with Khalti"
+              "Pay with eSewa"
             )}
           </Button>
 
-          {!khaltiEnabled && (
-            <p className="text-xs text-amber-700">Khalti is not configured yet. Add Khalti keys in your environment to enable online payment.</p>
+          {!esewaEnabled && (
+            <p className="text-xs text-amber-700">eSewa is disabled. Set NEXT_PUBLIC_ESEWA_ENABLED=true to enable online payment.</p>
           )}
         </div>
 

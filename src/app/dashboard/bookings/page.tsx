@@ -23,7 +23,7 @@ interface BookingWithRoom {
   guests: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
   payment: {
-    method: "CASH" | "KHALTI";
+    method: "CASH" | "ESEWA";
     status: "UNPAID" | "PAID" | "FAILED";
     reference: string | null;
     paidAt: Date | null;
@@ -131,7 +131,7 @@ export default async function UserBookingsPage({
   }
 
   const params = await searchParams;
-  const khaltiEnabled = Boolean(process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY);
+  const esewaEnabled = process.env.NEXT_PUBLIC_ESEWA_ENABLED !== "false";
   const { bookings, counts } = await getUserBookings(session.user.id, params.status);
 
   return (
@@ -260,7 +260,7 @@ export default async function UserBookingsPage({
                               status={booking.status}
                               paymentMethod={booking.payment?.method || "CASH"}
                               paymentStatus={booking.payment?.status || "UNPAID"}
-                              khaltiEnabled={khaltiEnabled}
+                              esewaEnabled={esewaEnabled}
                             />
                             {booking.status === "COMPLETED" && !booking.review && (
                               <Button className="w-full bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">

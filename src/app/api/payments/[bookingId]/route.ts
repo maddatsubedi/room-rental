@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 const updatePaymentSchema = z
   .object({
     status: z.enum(["UNPAID", "PAID", "FAILED"]).optional(),
-    method: z.enum(["CASH", "KHALTI"]).optional(),
+    method: z.enum(["CASH", "ESEWA"]).optional(),
     reference: z.string().trim().max(120).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {

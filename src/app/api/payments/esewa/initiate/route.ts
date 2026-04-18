@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { getAppUrl, initiateKhaltiPayment, isKhaltiConfigured } from "@/lib/khalti";
+import {
+  buildEsewaFormPayload,
+  createEsewaTransactionUuid,
+  getAppUrl,
+  getEsewaFormUrl,
+  isEsewaConfigured,
+} from "@/lib/esewa";
 
 const initiateSchema = z.object({
   bookingId: z.string().min(1, "Booking id is required"),
@@ -19,9 +25,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!isKhaltiConfigured()) {
+    if (!isEsewaConfigured()) {
       return NextResponse.json(
-        { success: false, error: "Khalti is not configured on the server" },
+        { success: false, error: "eSewa is not configured on the server" },
         { status: 500 }
       );
     }
@@ -39,9 +45,6 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: parsed.data.bookingId },
       include: {
-        user: {
-          select: { id: true, name: true, email: true, phone: true },
-        },
         room: {
           select: { title: true, landlordId: true },
         },
@@ -87,51 +90,46 @@ export async function POST(request: NextRequest) {
     }
 
     const appUrl = getAppUrl();
-    const amountInPaisa = Math.round(booking.totalPrice * 100);
+    const transactionUuid = createEsewaTransactionUuid(booking.id);
 
-    const payment = await initiateKhaltiPayment({
-      return_url: `${appUrl}/payment/khalti/success`,
-      website_url: appUrl,
-      amount: amountInPaisa,
-      purchase_order_id: booking.id,
-      purchase_order_name: booking.room.title,
-      customer_info: {
-        name: booking.user.name,
-        email: booking.user.email,
-        phone: booking.user.phone || undefined,
-      },
+    const formData = buildEsewaFormPayload({
+      amount: booking.totalPrice,
+      transactionUuid,
+      successUrl: `${appUrl}/payment/esewa/success`,
+      failureUrl: `${appUrl}/payment/esewa/failure`,
     });
 
     await prisma.payment.upsert({
       where: { bookingId: booking.id },
       update: {
         amount: booking.totalPrice,
-        method: "KHALTI",
+        method: "ESEWA",
         status: "UNPAID",
-        provider: "KHALTI",
-        providerPaymentId: payment.pidx,
+        provider: "ESEWA",
+        providerPaymentId: transactionUuid,
       },
       create: {
         bookingId: booking.id,
         userId: booking.userId,
         amount: booking.totalPrice,
-        method: "KHALTI",
+        method: "ESEWA",
         status: "UNPAID",
-        provider: "KHALTI",
-        providerPaymentId: payment.pidx,
+        provider: "ESEWA",
+        providerPaymentId: transactionUuid,
       },
     });
 
     return NextResponse.json({
       success: true,
       data: {
-        pidx: payment.pidx,
-        paymentUrl: payment.payment_url,
+        transactionUuid,
+        paymentUrl: getEsewaFormUrl(),
+        formData,
       },
-      message: "Khalti payment initiated",
+      message: "eSewa payment initiated",
     });
   } catch (error) {
-    console.error("Khalti initiate error:", error);
+    console.error("eSewa initiate error:", error);
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Failed to initiate payment" },
       { status: 500 }

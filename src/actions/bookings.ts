@@ -20,7 +20,7 @@ export async function createBooking(formData: FormData) {
     checkOut: formData.get("checkOut") as string,
     guests: parseInt(formData.get("guests") as string) || 1,
     notes: formData.get("notes") as string,
-    paymentMethod: (formData.get("paymentMethod") as "CASH" | "KHALTI") || "CASH",
+    paymentMethod: (formData.get("paymentMethod") as "CASH" | "ESEWA") || "CASH",
   };
 
   const validatedFields = bookingSchema.safeParse(data);
