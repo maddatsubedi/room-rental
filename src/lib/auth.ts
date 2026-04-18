@@ -22,9 +22,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         const { email, password } = validatedFields.data;
+        const normalizedEmail = email.toLowerCase();
 
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: { email: normalizedEmail },
         });
 
         if (!user || !user.password) {
@@ -32,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!user.isActive) {
-          throw new Error("Account is deactivated");
+          return null;
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);

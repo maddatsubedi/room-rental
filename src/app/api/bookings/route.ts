@@ -59,6 +59,15 @@ export async function GET(request: NextRequest) {
               landlordId: true,
             },
           },
+          payment: {
+            select: {
+              id: true,
+              method: true,
+              status: true,
+              reference: true,
+              paidAt: true,
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -108,7 +117,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { roomId, checkIn, checkOut, guests, notes } = validatedFields.data;
+    const { roomId, checkIn, checkOut, guests, notes, paymentMethod } = validatedFields.data;
 
     // Get room details
     const room = await prisma.room.findUnique({
@@ -137,8 +146,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for overlapping bookings
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    const checkInDate = checkIn;
+    const checkOutDate = checkOut;
 
     const overlappingBooking = await prisma.booking.findFirst({
       where: {
@@ -161,34 +170,57 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total price
-    const totalPrice = calculateTotalPrice(room.price, checkIn, checkOut);
+    const totalPrice = calculateTotalPrice(room.price, checkInDate, checkOutDate);
 
-    const booking = await prisma.booking.create({
-      data: {
-        userId: session.user.id,
-        roomId,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        guests,
-        notes,
-        totalPrice,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const booking = await prisma.$transaction(async (tx) => {
+      const createdBooking = await tx.booking.create({
+        data: {
+          userId: session.user.id,
+          roomId,
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          guests,
+          notes,
+          totalPrice,
+        },
+      });
+
+      await tx.payment.create({
+        data: {
+          bookingId: createdBooking.id,
+          userId: session.user.id,
+          amount: totalPrice,
+          method: paymentMethod,
+          status: "UNPAID",
+        },
+      });
+
+      return tx.booking.findUnique({
+        where: { id: createdBooking.id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          room: {
+            select: {
+              id: true,
+              title: true,
+              images: true,
+            },
+          },
+          payment: {
+            select: {
+              id: true,
+              method: true,
+              status: true,
+            },
           },
         },
-        room: {
-          select: {
-            id: true,
-            title: true,
-            images: true,
-          },
-        },
-      },
+      });
     });
 
     return NextResponse.json(

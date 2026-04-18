@@ -14,13 +14,24 @@ export async function login(formData: FormData) {
   const validatedFields = loginSchema.safeParse({ email, password });
 
   if (!validatedFields.success) {
-    return { error: "Invalid credentials" };
+    return { error: validatedFields.error.issues[0]?.message || "Invalid credentials" };
+  }
+
+  const normalizedEmail = validatedFields.data.email.toLowerCase();
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { isActive: true },
+  });
+
+  if (existingUser && !existingUser.isActive) {
+    return { error: "Your account is deactivated. Please contact support." };
   }
 
   try {
     await signIn("credentials", {
-      email,
-      password,
+      email: normalizedEmail,
+      password: validatedFields.data.password,
       redirect: false,
     });
     return { success: true };
@@ -42,37 +53,40 @@ export async function register(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
-  const role = (formData.get("role") as string) || "USER";
+  const selectedRole = (formData.get("role") as string) || "USER";
 
   const validatedFields = registerSchema.safeParse({
     name,
     email,
     password,
     confirmPassword,
-    role,
+    role: selectedRole,
   });
 
   if (!validatedFields.success) {
     return { error: validatedFields.error.issues[0].message };
   }
 
+  const { role } = validatedFields.data;
+  const normalizedEmail = validatedFields.data.email.toLowerCase();
+
   try {
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
       return { error: "Email already exists" };
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(validatedFields.data.password, 12);
 
     await prisma.user.create({
       data: {
-        name,
-        email,
+        name: validatedFields.data.name,
+        email: normalizedEmail,
         password: hashedPassword,
-        role: role as "USER" | "LANDLORD",
+        role,
       },
     });
 

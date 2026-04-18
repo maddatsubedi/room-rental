@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LandlordBookingActions } from "@/components/landlord/landlord-booking-actions";
 import {
   Table,
   TableBody,
@@ -15,14 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { formatCurrency, formatDate, getInitials, getStatusColor } from "@/lib/utils";
-import { MoreHorizontal, Eye, Check, X, Calendar, MessageSquare } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface SearchParams {
   status?: string;
@@ -46,6 +41,9 @@ async function getLandlordBookings(landlordId: string, status?: string) {
       },
       room: {
         select: { id: true, title: true, images: true },
+      },
+      payment: {
+        select: { method: true, status: true },
       },
     },
   });
@@ -128,6 +126,7 @@ export default async function LandlordBookingsPage({
                     <TableHead>Dates</TableHead>
                     <TableHead>Guests</TableHead>
                     <TableHead>Total</TableHead>
+                    <TableHead>Payment</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -167,44 +166,24 @@ export default async function LandlordBookingsPage({
                         {formatCurrency(booking.totalPrice)}
                       </TableCell>
                       <TableCell>
+                        <Badge variant="outline">
+                          {booking.payment?.method || "CASH"} / {booking.payment?.status || "UNPAID"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <Badge className={getStatusColor(booking.status)}>
                           {booking.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {booking.user.email && (
-                              <DropdownMenuItem asChild>
-                                <a href={`mailto:${booking.user.email}`}>
-                                  <MessageSquare className="h-4 w-4 mr-2" />
-                                  Contact Guest
-                                </a>
-                              </DropdownMenuItem>
-                            )}
-                            {booking.status === "PENDING" && (
-                              <>
-                                <DropdownMenuItem className="text-green-600">
-                                  <Check className="h-4 w-4 mr-2" />
-                                  Confirm Booking
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
-                                  <X className="h-4 w-4 mr-2" />
-                                  Decline Booking
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <LandlordBookingActions
+                          bookingId={booking.id}
+                          roomId={booking.room.id}
+                          status={booking.status}
+                          paymentMethod={booking.payment?.method || "CASH"}
+                          paymentStatus={booking.payment?.status || "UNPAID"}
+                          guestEmail={booking.user.email || undefined}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

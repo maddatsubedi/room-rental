@@ -29,6 +29,17 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentMethod {
+  CASH
+  KHALTI
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+}
+
 enum RoomType {
   SINGLE
   DOUBLE
@@ -53,6 +64,7 @@ model User {
   // Relations
   rooms          Room[]       @relation("LandlordRooms")
   bookings       Booking[]    @relation("UserBookings")
+  payments       Payment[]
   reviews        Review[]
 
   @@map("users")
@@ -112,11 +124,36 @@ model Booking {
   user        User          @relation("UserBookings", fields: [userId], references: [id], onDelete: Cascade)
   roomId      String        @db.ObjectId
   room        Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  payment     Payment?
 
   @@index([userId])
   @@index([roomId])
   @@index([status])
   @@map("bookings")
+}
+
+model Payment {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  amount            Float
+  method            PaymentMethod @default(CASH)
+  status            PaymentStatus @default(UNPAID)
+  provider          String?
+  providerPaymentId String?
+  reference         String?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  bookingId         String        @unique @db.ObjectId
+  booking           Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId            String        @db.ObjectId
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([providerPaymentId])
+  @@index([userId])
+  @@map("payments")
 }
 
 model Review {

@@ -66,7 +66,7 @@ export default function EditRoomPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "USA",
+    country: "Nepal",
     location: "",
     size: "",
     bedrooms: "1",
@@ -100,7 +100,7 @@ export default function EditRoomPage() {
           city: room.city || "",
           state: room.state || "",
           zipCode: room.zipCode || "",
-          country: room.country || "USA",
+          country: room.country || "Nepal",
           location: room.location || "",
           size: room.size?.toString() || "",
           bedrooms: room.bedrooms?.toString() || "1",
@@ -148,9 +148,21 @@ export default function EditRoomPage() {
   };
 
   const handleAddImage = () => {
-    if (imageUrl && !formData.images.includes(imageUrl)) {
-      setFormData({ ...formData, images: [...formData.images, imageUrl] });
+    const url = imageUrl.trim();
+    if (!url) return;
+
+    try {
+      new URL(url);
+    } catch {
+      setErrors((prev) => ({ ...prev, images: "Please enter a valid image URL" }));
+      toast.error("Please enter a valid image URL");
+      return;
+    }
+
+    if (!formData.images.includes(url)) {
+      setFormData({ ...formData, images: [...formData.images, url] });
       setImageUrl("");
+      setErrors((prev) => ({ ...prev, images: "" }));
     }
   };
 
@@ -511,6 +523,7 @@ export default function EditRoomPage() {
                 placeholder="Paste image URL here..."
                 value={imageUrl}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)}
+                error={errors.images}
                 rightComponent={
                   <Button type="button" onClick={handleAddImage} variant="outline">
                     <Plus className="h-4 w-4" />

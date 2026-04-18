@@ -117,7 +117,7 @@ export default async function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-dvh flex items-center">
+      <section className="relative min-h-[72vh] flex items-center">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
@@ -131,107 +131,29 @@ export default async function HomePage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 w-full pt-24">
+        <div className="relative z-10 w-full pt-20">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left Column - Text */}
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-sm text-white/80">{stats.roomCount}+ spaces available now</span>
-                </div>
+            <div className="max-w-2xl">
+              <p className="text-sm text-white/80 mb-4">{stats.roomCount}+ rooms available now</p>
 
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif text-white leading-[1.05] tracking-tight">
-                  Find your
-                  <span className="block text-white/60">perfect home</span>
-                </h1>
+              <h1 className="text-4xl sm:text-5xl font-serif text-white leading-tight tracking-tight">
+                Find your next room in Nepal
+              </h1>
 
-                <p className="mt-8 text-lg text-white/50 max-w-md leading-relaxed">
-                  Discover affordable rooms and apartments across Nepal. Perfect for students, working professionals, and families looking for their next home.
-                </p>
+              <p className="mt-4 text-base text-white/80 leading-relaxed">
+                Search verified listings with clear monthly pricing and easy booking.
+              </p>
 
-                {/* Search Box */}
-                <HeroSearch cities={cities} />
+              <HeroSearch cities={cities} />
 
-                {/* Trust Indicators */}
-                <div className="mt-10 flex flex-wrap items-center gap-8">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-white/40" />
-                    <span className="text-sm text-white/50">Verified hosts</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-white/40" />
-                    <span className="text-sm text-white/50">Instant booking</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="h-5 w-5 text-white/40" />
-                    <span className="text-sm text-white/50">Quality assured</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column - Visual Stack */}
-              <div className="hidden lg:block">
-                <div className="relative">
-                  {/* Feature card */}
-                  <div className="absolute -top-10 -left-4 w-72 rounded-3xl bg-white/10 backdrop-blur-lg border border-white/15 shadow-2xl p-6">
-                    <div className="text-xs uppercase tracking-wide text-white/70 mb-2">Featured Room</div>
-                    <div className="text-2xl font-serif text-white leading-snug mb-3">2BHK in Bharatpur</div>
-                    <div className="flex items-center gap-3 text-sm text-white/70 mb-4">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>Lalitpur</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>Up to 3</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-3xl font-serif text-white">Rs. 12,000</div>
-                        <div className="text-xs text-white/60">per month</div>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="text-sm text-white">4.9</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Community card */}
-                  <div className="absolute top-28 right-0 bg-white rounded-2xl p-6 shadow-2xl w-64">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-stone-600" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-serif text-stone-900">{stats.userCount}+</div>
-                        <div className="text-xs text-stone-500">Active members</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-stone-500">
-                      <span>Happy tenants</span>
-                      <span className="text-stone-900 font-semibold">{stats.bookingCount}+</span>
-                    </div>
-                  </div>
-
-                  {/* Rating badge */}
-                  <div className="absolute bottom-0 left-8 bg-emerald-500 rounded-2xl p-5 shadow-2xl text-white">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                        <Star className="h-5 w-5 fill-white text-white" />
-                      </div>
-                      <div>
-                        <div className="text-lg font-medium">4.9 Rating</div>
-                        <div className="text-sm text-white/80">Tenant satisfaction</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Decorative Background */}
-                  <div className="w-80 h-80 rounded-full border border-white/10 mx-auto" />
-                </div>
+              <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-white/80">
+                <span className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4" /> Verified hosts
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" /> Quick booking
+                </span>
+                <span>{stats.bookingCount}+ successful stays</span>
               </div>
             </div>
           </div>

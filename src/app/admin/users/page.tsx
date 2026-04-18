@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AdminUserActions } from "@/components/admin/admin-user-actions";
 import {
   Table,
   TableBody,
@@ -16,14 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { formatDate, getInitials } from "@/lib/utils";
-import { Search, MoreHorizontal, UserPlus, Filter, Eye, Edit, Trash2 } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface SearchParams {
   role?: string;
@@ -183,27 +178,12 @@ export default async function AdminUsersPage({
                       <TableCell>{user._count.bookings}</TableCell>
                       <TableCell>{formatDate(user.createdAt)}</TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <AdminUserActions
+                          userId={user.id}
+                          role={user.role}
+                          isActive={user.isActive}
+                          isSelf={session.user.id === user.id}
+                        />
                       </TableCell>
                     </TableRow>
                   ))

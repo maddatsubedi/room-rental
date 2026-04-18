@@ -7,6 +7,7 @@ import { UserLayout } from "@/components/layout/user-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { UserBookingActions } from "@/components/bookings/user-booking-actions";
 import { formatCurrency, formatDate, getStatusColor } from "@/lib/utils";
 import { Calendar, MapPin, Home, ArrowRight, Star } from "lucide-react";
 
@@ -21,6 +22,12 @@ interface BookingWithRoom {
   totalPrice: number;
   guests: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  payment: {
+    method: "CASH" | "KHALTI";
+    status: "UNPAID" | "PAID" | "FAILED";
+    reference: string | null;
+    paidAt: Date | null;
+  } | null;
   notes: string | null;
   createdAt: Date;
   room: {
@@ -46,6 +53,14 @@ async function getUserBookings(userId: string, status?: string): Promise<{ booki
     where,
     orderBy: { createdAt: "desc" },
     include: {
+      payment: {
+        select: {
+          method: true,
+          status: true,
+          reference: true,
+          paidAt: true,
+        },
+      },
       room: {
         select: {
           id: true,
@@ -80,6 +95,14 @@ async function getUserBookings(userId: string, status?: string): Promise<{ booki
     totalPrice: booking.totalPrice,
     guests: booking.guests,
     status: booking.status,
+    payment: booking.payment
+      ? {
+          method: booking.payment.method,
+          status: booking.payment.status,
+          reference: booking.payment.reference,
+          paidAt: booking.payment.paidAt,
+        }
+      : null,
     notes: booking.notes,
     createdAt: booking.createdAt,
     room: booking.room,
@@ -108,6 +131,7 @@ export default async function UserBookingsPage({
   }
 
   const params = await searchParams;
+  const khaltiEnabled = Boolean(process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY);
   const { bookings, counts } = await getUserBookings(session.user.id, params.status);
 
   return (
@@ -220,6 +244,9 @@ export default async function UserBookingsPage({
                             <p className="text-sm text-gray-500">Total</p>
                             <p className="text-2xl font-bold">{formatCurrency(booking.totalPrice)}</p>
                             <p className="text-sm text-gray-500">{booking.guests} guest{booking.guests !== 1 ? "s" : ""}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Payment: {booking.payment?.method || "CASH"} / {booking.payment?.status || "UNPAID"}
+                            </p>
                           </div>
 
                           <div className="flex flex-col gap-2">
@@ -228,6 +255,13 @@ export default async function UserBookingsPage({
                                 View Room
                               </Button>
                             </Link>
+                            <UserBookingActions
+                              bookingId={booking.id}
+                              status={booking.status}
+                              paymentMethod={booking.payment?.method || "CASH"}
+                              paymentStatus={booking.payment?.status || "UNPAID"}
+                              khaltiEnabled={khaltiEnabled}
+                            />
                             {booking.status === "COMPLETED" && !booking.review && (
                               <Button className="w-full bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
                                 <Star className="h-4 w-4 mr-2" />

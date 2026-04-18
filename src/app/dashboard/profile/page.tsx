@@ -12,11 +12,13 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, User, Mail, Phone, Camera } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import { userUpdateSchema } from "@/lib/validations";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, update } = useSession();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
@@ -26,17 +28,43 @@ export default function ProfilePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
+
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      image: formData.image,
+    };
+
+    const validated = userUpdateSchema.safeParse(payload);
+
+    if (!validated.success) {
+      const fieldErrors = validated.error.flatten().fieldErrors;
+      setErrors({
+        name: fieldErrors.name?.[0] || "",
+        email: fieldErrors.email?.[0] || "",
+        phone: fieldErrors.phone?.[0] || "",
+        image: fieldErrors.image?.[0] || "",
+      });
+      toast.error("Please fix the highlighted fields");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/users/${session?.user?.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(validated.data),
       });
 
       const data = await response.json();
@@ -109,6 +137,7 @@ export default function ProfilePage() {
                 placeholder="https://example.com/avatar.jpg"
                 value={formData.image}
                 onChange={handleChange}
+                error={errors.image}
                 description="Enter a URL for your profile picture"
               />
 
@@ -123,6 +152,7 @@ export default function ProfilePage() {
                 value={formData.name}
                 onChange={handleChange}
                 leftIcon={<User className="h-4 w-4" />}
+                error={errors.name}
               />
 
               {/* Email */}
@@ -136,6 +166,7 @@ export default function ProfilePage() {
                 disabled
                 description="Email cannot be changed"
                 leftIcon={<Mail className="h-4 w-4" />}
+                error={errors.email}
               />
 
               {/* Phone */}
@@ -148,6 +179,7 @@ export default function ProfilePage() {
                 value={formData.phone}
                 onChange={handleChange}
                 leftIcon={<Phone className="h-4 w-4" />}
+                error={errors.phone}
               />
 
               <Separator />

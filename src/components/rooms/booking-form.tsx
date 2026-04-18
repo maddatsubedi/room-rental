@@ -24,7 +24,9 @@ interface BookingFormProps {
 
 export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
   const router = useRouter();
+  const khaltiEnabled = Boolean(process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [guests, setGuests] = useState(1);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: addMonths(new Date(), 0),
@@ -36,24 +38,24 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
     : 0;
 
   const subtotal = price * months;
-  const serviceFee = subtotal * 0.05; // 5% service fee for long-term
-  const total = subtotal + serviceFee;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (paymentMethod: "CASH" | "KHALTI") => {
+    setFormError(null);
+
     if (!dateRange?.from || !dateRange?.to) {
-      toast.error("Please select move-in and move-out dates");
+      setFormError("Please select move-in and move-out dates.");
       return;
     }
 
     if (months < 1) {
-      toast.error("Minimum rental period is 1 month");
+      setFormError("Minimum rental period is 1 month.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch("/api/bookings", {
+      const bookingResponse = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,14 +63,38 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
           checkIn: dateRange.from.toISOString(),
           checkOut: dateRange.to.toISOString(),
           guests,
-          totalPrice: total,
+          paymentMethod,
         }),
       });
 
-      const data = await response.json();
+      const bookingData = await bookingResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create booking");
+      if (!bookingResponse.ok) {
+        const fieldError =
+          bookingData?.error && typeof bookingData.error === "object"
+            ? Object.values(bookingData.error)[0]
+            : bookingData.error;
+        throw new Error(
+          Array.isArray(fieldError) ? String(fieldError[0]) : fieldError || "Failed to create booking"
+        );
+      }
+
+      if (paymentMethod === "KHALTI") {
+        const paymentResponse = await fetch("/api/payments/khalti/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId: bookingData.data.id }),
+        });
+
+        const paymentData = await paymentResponse.json();
+
+        if (!paymentResponse.ok) {
+          throw new Error(paymentData.error || "Failed to start Khalti payment");
+        }
+
+        toast.success("Redirecting to Khalti payment...");
+        window.location.href = paymentData.data.paymentUrl;
+        return;
       }
 
       toast.success("Booking request sent successfully!");
@@ -158,21 +184,45 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
         <p className="text-xs text-gray-500">Maximum {maxGuests} guests</p>
       </div>
 
-      {/* Book Button */}
-      <Button
-        className="w-full bg-stone-900 hover:bg-stone-800 h-12 text-lg"
-        onClick={handleSubmit}
-        disabled={loading || months < 1}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Submitting...
-          </>
-        ) : (
-          "Request Booking"
-        )}
-      </Button>
+        {formError && <p className="text-sm text-red-600">{formError}</p>}
+
+        {/* Booking Actions */}
+        <div className="space-y-2">
+          <Button
+            className="w-full bg-stone-900 hover:bg-stone-800 h-12"
+            onClick={() => handleSubmit("CASH")}
+            disabled={loading || months < 1}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Book Without Online Payment"
+            )}
+          </Button>
+
+          <Button
+            className="w-full h-12 bg-[#5D2E8C] hover:bg-[#4A2570] text-white"
+            onClick={() => handleSubmit("KHALTI")}
+            disabled={loading || months < 1 || !khaltiEnabled}
+            title={!khaltiEnabled ? "Khalti is not configured yet" : "Pay with Khalti"}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Pay with Khalti"
+            )}
+          </Button>
+
+          {!khaltiEnabled && (
+            <p className="text-xs text-amber-700">Khalti is not configured yet. Add Khalti keys in your environment to enable online payment.</p>
+          )}
+        </div>
 
       {/* Price Breakdown */}
       {months > 0 && (
@@ -183,13 +233,9 @@ export function BookingForm({ roomId, price, maxGuests }: BookingFormProps) {
             </span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Service fee (5%)</span>
-            <span>{formatCurrency(serviceFee)}</span>
-          </div>
           <div className="flex justify-between font-semibold text-lg pt-3 border-t">
             <span>Total</span>
-            <span>{formatCurrency(total)}</span>
+            <span>{formatCurrency(subtotal)}</span>
           </div>
         </div>
       )}

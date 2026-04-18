@@ -24,7 +24,7 @@ export async function createRoom(formData: FormData) {
     city: formData.get("city") as string,
     state: formData.get("state") as string,
     zipCode: formData.get("zipCode") as string,
-    country: (formData.get("country") as string) || "USA",
+    country: (formData.get("country") as string) || "Nepal",
     amenities: JSON.parse(formData.get("amenities") as string || "[]"),
     maxGuests: parseInt(formData.get("maxGuests") as string) || 1,
     bedrooms: parseInt(formData.get("bedrooms") as string) || 1,

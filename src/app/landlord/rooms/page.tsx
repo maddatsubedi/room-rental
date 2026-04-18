@@ -7,14 +7,9 @@ import { LandlordLayout } from "@/components/layout/landlord-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { Plus, MoreHorizontal, Eye, Edit, Trash2, MapPin, Star, Users, Bed } from "lucide-react";
+import { LandlordRoomActions } from "@/components/landlord/landlord-room-actions";
+import { formatCurrency } from "@/lib/utils";
+import { Plus, MapPin, Star, Users, Bed } from "lucide-react";
 
 async function getLandlordRooms(landlordId: string) {
   const rooms = await prisma.room.findMany({
@@ -89,31 +84,7 @@ export default async function LandlordRoomsPage() {
                   </div>
                   {/* Actions */}
                   <div className="absolute top-3 right-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="h-8 w-8 bg-white/90 hover:bg-white">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <Link href={`/rooms/${room.id}`}>
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Public Page
-                          </DropdownMenuItem>
-                        </Link>
-                        <Link href={`/landlord/rooms/${room.id}/edit`}>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Room
-                          </DropdownMenuItem>
-                        </Link>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Room
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <LandlordRoomActions roomId={room.id} />
                   </div>
                 </div>
 

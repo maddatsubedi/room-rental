@@ -20,6 +20,7 @@ export async function createBooking(formData: FormData) {
     checkOut: formData.get("checkOut") as string,
     guests: parseInt(formData.get("guests") as string) || 1,
     notes: formData.get("notes") as string,
+    paymentMethod: (formData.get("paymentMethod") as "CASH" | "KHALTI") || "CASH",
   };
 
   const validatedFields = bookingSchema.safeParse(data);
@@ -28,9 +29,11 @@ export async function createBooking(formData: FormData) {
     return { error: validatedFields.error.issues[0].message };
   }
 
+  const validatedData = validatedFields.data;
+
   try {
     const room = await prisma.room.findUnique({
-      where: { id: data.roomId },
+      where: { id: validatedData.roomId },
     });
 
     if (!room) {
@@ -41,19 +44,19 @@ export async function createBooking(formData: FormData) {
       return { error: "Room is not available" };
     }
 
-    if (data.guests > room.maxGuests) {
+    if (validatedData.guests > room.maxGuests) {
       return { error: `Maximum guests allowed: ${room.maxGuests}` };
     }
 
     // Check for overlapping bookings
     const overlappingBooking = await prisma.booking.findFirst({
       where: {
-        roomId: data.roomId,
+        roomId: validatedData.roomId,
         status: { in: ["PENDING", "CONFIRMED"] },
         OR: [
           {
-            checkIn: { lte: new Date(data.checkOut) },
-            checkOut: { gte: new Date(data.checkIn) },
+            checkIn: { lte: validatedData.checkOut },
+            checkOut: { gte: validatedData.checkIn },
           },
         ],
       },
@@ -63,23 +66,37 @@ export async function createBooking(formData: FormData) {
       return { error: "Room is already booked for these dates" };
     }
 
-    const totalPrice = calculateTotalPrice(room.price, data.checkIn, data.checkOut);
+    const totalPrice = calculateTotalPrice(room.price, validatedData.checkIn, validatedData.checkOut);
 
-    const booking = await prisma.booking.create({
-      data: {
-        roomId: data.roomId,
-        userId: session.user.id,
-        checkIn: new Date(data.checkIn),
-        checkOut: new Date(data.checkOut),
-        guests: data.guests,
-        totalPrice,
-        notes: data.notes,
-        status: "PENDING",
-      },
+    const booking = await prisma.$transaction(async (tx) => {
+      const createdBooking = await tx.booking.create({
+        data: {
+          roomId: validatedData.roomId,
+          userId: session.user.id,
+          checkIn: validatedData.checkIn,
+          checkOut: validatedData.checkOut,
+          guests: validatedData.guests,
+          totalPrice,
+          notes: validatedData.notes,
+          status: "PENDING",
+        },
+      });
+
+      await tx.payment.create({
+        data: {
+          bookingId: createdBooking.id,
+          userId: session.user.id,
+          amount: totalPrice,
+          method: validatedData.paymentMethod,
+          status: "UNPAID",
+        },
+      });
+
+      return createdBooking;
     });
 
     revalidatePath("/dashboard/bookings");
-    revalidatePath(`/rooms/${data.roomId}`);
+    revalidatePath(`/rooms/${validatedData.roomId}`);
     return { success: true, booking };
   } catch (error) {
     console.error("Create booking error:", error);

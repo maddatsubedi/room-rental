@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
+
+const bookingStatusSchema = z.enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"]);
 
 // GET /api/bookings/[id] - Get a single booking
 export async function GET(
@@ -40,6 +43,16 @@ export async function GET(
                 phone: true,
               },
             },
+          },
+        },
+        payment: {
+          select: {
+            id: true,
+            amount: true,
+            method: true,
+            status: true,
+            reference: true,
+            paidAt: true,
           },
         },
       },
@@ -107,13 +120,29 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-    const { status } = body;
-
     // Validate status transitions
     const isOwner = booking.userId === session.user.id;
     const isLandlord = booking.room.landlordId === session.user.id;
     const isAdmin = session.user.role === "ADMIN";
+
+    if (!isOwner && !isLandlord && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "Access denied" },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const parsedStatus = bookingStatusSchema.safeParse(body?.status);
+
+    if (!parsedStatus.success) {
+      return NextResponse.json(
+        { success: false, error: "Invalid booking status" },
+        { status: 400 }
+      );
+    }
+
+    const status = parsedStatus.data;
 
     // Users can only cancel their own bookings
     if (isOwner && !isLandlord && !isAdmin) {
@@ -123,9 +152,16 @@ export async function PUT(
           { status: 403 }
         );
       }
+
+      if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
+        return NextResponse.json(
+          { success: false, error: "This booking cannot be cancelled" },
+          { status: 400 }
+        );
+      }
     }
 
-    // Landlords can confirm or cancel
+    // Landlords can update bookings for their own listings
     if (isLandlord && !isAdmin) {
       if (!["CONFIRMED", "CANCELLED", "COMPLETED"].includes(status)) {
         return NextResponse.json(

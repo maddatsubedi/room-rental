@@ -106,6 +106,7 @@ export async function PUT(
 
     // Regular fields anyone can update for themselves
     if (validatedFields.data.name) updateData.name = validatedFields.data.name;
+    if (validatedFields.data.email) updateData.email = validatedFields.data.email.toLowerCase();
     if (validatedFields.data.phone) updateData.phone = validatedFields.data.phone;
     if (validatedFields.data.image) updateData.image = validatedFields.data.image;
 
@@ -115,6 +116,29 @@ export async function PUT(
       if (typeof validatedFields.data.isActive === "boolean") {
         updateData.isActive = validatedFields.data.isActive;
       }
+    }
+
+    if (updateData.email) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: updateData.email as string,
+          NOT: { id },
+        },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { success: false, error: "Email is already in use" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No valid fields provided for update" },
+        { status: 400 }
+      );
     }
 
     const updatedUser = await prisma.user.update({
@@ -185,3 +209,5 @@ export async function DELETE(
     );
   }
 }
+
+export { PUT as PATCH };

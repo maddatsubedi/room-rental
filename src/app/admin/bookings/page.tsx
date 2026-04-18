@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AdminBookingActions } from "@/components/admin/admin-booking-actions";
 import {
   Table,
   TableBody,
@@ -16,14 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { formatCurrency, formatDate, getInitials, getStatusColor } from "@/lib/utils";
-import { Search, MoreHorizontal, Eye, Check, X, Calendar } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 
 interface SearchParams {
   status?: string;
@@ -61,6 +56,9 @@ async function getBookings(searchParams: SearchParams) {
         },
         room: {
           select: { id: true, title: true, city: true },
+        },
+        payment: {
+          select: { method: true, status: true },
         },
       },
     }),
@@ -153,6 +151,7 @@ export default async function AdminBookingsPage({
                   <TableHead>Dates</TableHead>
                   <TableHead>Guests</TableHead>
                   <TableHead>Total</TableHead>
+                  <TableHead>Payment</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -196,42 +195,29 @@ export default async function AdminBookingsPage({
                         {formatCurrency(booking.totalPrice)}
                       </TableCell>
                       <TableCell>
+                        <Badge variant="outline">
+                          {booking.payment?.method || "CASH"} / {booking.payment?.status || "UNPAID"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <Badge className={getStatusColor(booking.status)}>
                           {booking.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            {booking.status === "PENDING" && (
-                              <>
-                                <DropdownMenuItem className="text-green-600">
-                                  <Check className="h-4 w-4 mr-2" />
-                                  Confirm Booking
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
-                                  <X className="h-4 w-4 mr-2" />
-                                  Cancel Booking
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <AdminBookingActions
+                          bookingId={booking.id}
+                          roomId={booking.room.id}
+                          status={booking.status}
+                          paymentMethod={booking.payment?.method || "CASH"}
+                          paymentStatus={booking.payment?.status || "UNPAID"}
+                        />
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       No bookings found
                     </TableCell>
                   </TableRow>

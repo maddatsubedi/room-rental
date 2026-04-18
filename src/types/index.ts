@@ -1,6 +1,17 @@
-import { Room, User, Booking, Review, Role, RoomStatus, BookingStatus, RoomType } from "@prisma/client";
+import {
+  Room,
+  User,
+  Booking,
+  Review,
+  Role,
+  RoomStatus,
+  BookingStatus,
+  RoomType,
+  PaymentMethod,
+  PaymentStatus,
+} from "@prisma/client";
 
-export type { Role, RoomStatus, BookingStatus, RoomType };
+export type { Role, RoomStatus, BookingStatus, RoomType, PaymentMethod, PaymentStatus };
 
 export interface RoomWithLandlord extends Room {
   landlord: User;

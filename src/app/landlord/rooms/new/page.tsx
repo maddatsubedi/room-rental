@@ -61,7 +61,7 @@ export default function NewRoomPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "USA",
+    country: "Nepal",
     location: "",
     size: "",
     bedrooms: "1",
@@ -99,9 +99,21 @@ export default function NewRoomPage() {
   };
 
   const handleAddImage = () => {
-    if (imageUrl && !formData.images.includes(imageUrl)) {
-      setFormData({ ...formData, images: [...formData.images, imageUrl] });
+    const url = imageUrl.trim();
+    if (!url) return;
+
+    try {
+      new URL(url);
+    } catch {
+      setErrors((prev) => ({ ...prev, images: "Please enter a valid image URL" }));
+      toast.error("Please enter a valid image URL");
+      return;
+    }
+
+    if (!formData.images.includes(url)) {
+      setFormData({ ...formData, images: [...formData.images, url] });
       setImageUrl("");
+      setErrors((prev) => ({ ...prev, images: "" }));
     }
   };
 
@@ -417,6 +429,7 @@ export default function NewRoomPage() {
                 placeholder="Paste image URL here..."
                 value={imageUrl}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)}
+                error={errors.images}
                 rightComponent={
                   <Button type="button" onClick={handleAddImage} variant="outline">
                     <Plus className="h-4 w-4" />

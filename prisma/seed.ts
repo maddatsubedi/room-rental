@@ -12,6 +12,7 @@ async function main() {
 
   // Clean existing data
   await prisma.review.deleteMany();
+  await prisma.payment.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.room.deleteMany();
   await prisma.user.deleteMany();
@@ -35,7 +36,7 @@ async function main() {
   const landlordPassword = await bcrypt.hash("landlord123", 10);
   const landlord1 = await prisma.user.create({
     data: {
-      email: "rajesh@landlord.com",
+      email: "landlord1@roomrental.com",
       name: "Rajesh Sharma",
       password: landlordPassword,
       role: "LANDLORD",
@@ -45,7 +46,7 @@ async function main() {
 
   const landlord2 = await prisma.user.create({
     data: {
-      email: "sunita@landlord.com",
+      email: "landlord2@roomrental.com",
       name: "Sunita Thapa",
       password: landlordPassword,
       role: "LANDLORD",
@@ -58,7 +59,7 @@ async function main() {
   const userPassword = await bcrypt.hash("user123", 10);
   const user1 = await prisma.user.create({
     data: {
-      email: "anil@user.com",
+      email: "user1@roomrental.com",
       name: "Anil Gurung",
       password: userPassword,
       role: "USER",
@@ -68,7 +69,7 @@ async function main() {
 
   const user2 = await prisma.user.create({
     data: {
-      email: "priya@user.com",
+      email: "user2@roomrental.com",
       name: "Priya Maharjan",
       password: userPassword,
       role: "USER",
@@ -289,6 +290,54 @@ async function main() {
   ]);
   console.log("📅 Created", bookings.length, "bookings");
 
+  // Create Payments for bookings
+  const payments = await Promise.all([
+    prisma.payment.create({
+      data: {
+        bookingId: bookings[0].id,
+        userId: user1.id,
+        amount: bookings[0].totalPrice,
+        method: "CASH",
+        status: "PAID",
+        reference: "CASH-BOOKING-001",
+        paidAt: new Date("2024-09-01"),
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        bookingId: bookings[1].id,
+        userId: user2.id,
+        amount: bookings[1].totalPrice,
+        method: "KHALTI",
+        status: "PAID",
+        providerPaymentId: "seed-khalti-0001",
+        reference: "KHALTI-TXN-0001",
+        paidAt: new Date("2024-10-01"),
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        bookingId: bookings[2].id,
+        userId: user1.id,
+        amount: bookings[2].totalPrice,
+        method: "CASH",
+        status: "PAID",
+        reference: "CASH-BOOKING-002",
+        paidAt: new Date("2024-06-01"),
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        bookingId: bookings[3].id,
+        userId: user2.id,
+        amount: bookings[3].totalPrice,
+        method: "KHALTI",
+        status: "UNPAID",
+      },
+    }),
+  ]);
+  console.log("💳 Created", payments.length, "payments");
+
   // Create Reviews
   const reviews = await Promise.all([
     prisma.review.create({
@@ -321,10 +370,10 @@ async function main() {
   console.log("✅ Database seeded successfully!");
   console.log("\n📋 Test Accounts:");
   console.log("   Admin: admin@roomrental.com / admin123");
-  console.log("   Landlord: rajesh@landlord.com / landlord123");
-  console.log("   Landlord: sunita@landlord.com / landlord123");
-  console.log("   User: anil@user.com / user123");
-  console.log("   User: priya@user.com / user123");
+  console.log("   Landlord: landlord1@roomrental.com / landlord123");
+  console.log("   Landlord: landlord2@roomrental.com / landlord123");
+  console.log("   User: user1@roomrental.com / user123");
+  console.log("   User: user2@roomrental.com / user123");
 }
 
 main()
