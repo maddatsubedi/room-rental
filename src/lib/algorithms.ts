@@ -1,4 +1,27 @@
+import type { Prisma, RoomType } from "@prisma/client";
+import { prisma } from "@/lib/db";
+
 export type RoomSortOption = "featured" | "price-asc" | "price-desc" | "newest";
+
+export interface RoomSearchParams {
+  search?: string;
+  city?: string;
+  type?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  minGuests?: string;
+  amenities?: string;
+  sort?: RoomSortOption;
+  page?: string;
+}
+
+const ROOM_TYPE_VALUES: RoomType[] = [
+  "SINGLE",
+  "DOUBLE",
+  "STUDIO",
+  "APARTMENT",
+  "SHARED",
+];
 
 type SortableRoom = {
   price: number;
@@ -94,4 +117,86 @@ export function getTopListings<T extends ListingWithReviews>(
   }
 
   return sorted.slice(0, limit);
+}
+
+export async function getRoomSearchResults(searchParams: RoomSearchParams) {
+  const page = Number.parseInt(searchParams.page || "1", 10);
+  const limit = 12;
+  const sortBy: RoomSortOption = searchParams.sort || "featured";
+
+  const where: Prisma.RoomWhereInput = {
+    isActive: true,
+    status: "AVAILABLE",
+  };
+
+  if (searchParams.city && searchParams.city !== "all") {
+    where.city = { contains: searchParams.city, mode: "insensitive" };
+  }
+
+  if (searchParams.search) {
+    where.OR = [
+      { title: { contains: searchParams.search, mode: "insensitive" } },
+      { location: { contains: searchParams.search, mode: "insensitive" } },
+      { city: { contains: searchParams.search, mode: "insensitive" } },
+    ];
+  }
+
+  if (
+    searchParams.type &&
+    searchParams.type !== "all" &&
+    ROOM_TYPE_VALUES.includes(searchParams.type as RoomType)
+  ) {
+    where.type = searchParams.type as RoomType;
+  }
+
+  if (searchParams.minPrice || searchParams.maxPrice) {
+    where.price = {};
+
+    if (searchParams.minPrice) {
+      where.price.gte = Number.parseFloat(searchParams.minPrice);
+    }
+
+    if (searchParams.maxPrice) {
+      where.price.lte = Number.parseFloat(searchParams.maxPrice);
+    }
+  }
+
+  if (searchParams.minGuests) {
+    where.maxGuests = { gte: Number.parseInt(searchParams.minGuests, 10) };
+  }
+
+  if (searchParams.amenities) {
+    where.amenities = { hasEvery: searchParams.amenities.split(",") };
+  }
+
+  const [allRooms, total, cities] = await Promise.all([
+    prisma.room.findMany({
+      where,
+      include: {
+        reviews: {
+          select: { rating: true },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    }),
+    prisma.room.count({ where }),
+    prisma.room.findMany({
+      where: { isActive: true, status: "AVAILABLE" },
+      select: { city: true },
+      distinct: ["city"],
+    }),
+  ]);
+
+  const sortedRooms = bubbleSortRooms(allRooms, sortBy);
+  const startIndex = (page - 1) * limit;
+  const rooms = sortedRooms.slice(startIndex, startIndex + limit);
+
+  return {
+    rooms,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+    sortBy,
+    cities: cities.map((city) => city.city),
+  };
 }

@@ -7,96 +7,8 @@ import { SearchFilters } from "@/components/rooms/search-filters";
 import { RoomCard } from "@/components/rooms/room-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { prisma } from "@/lib/db";
-import { bubbleSortRooms, type RoomSortOption } from "@/lib/algorithms";
+import { getRoomSearchResults, type RoomSearchParams } from "@/lib/algorithms";
 import { MapPin, ChevronLeft, ChevronRight, SlidersHorizontal, Search } from "lucide-react";
-
-interface SearchParams {
-  search?: string;
-  city?: string;
-  type?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  minGuests?: string;
-  amenities?: string;
-  sort?: RoomSortOption;
-  page?: string;
-}
-
-async function getRooms(searchParams: SearchParams) {
-  const page = parseInt(searchParams.page || "1");
-  const limit = 12;
-  const sortBy: RoomSortOption = searchParams.sort || "featured";
-
-  const where: Record<string, unknown> = {
-    isActive: true,
-    status: "AVAILABLE",
-  };
-
-  if (searchParams.city && searchParams.city !== "all") {
-    where.city = { contains: searchParams.city, mode: "insensitive" };
-  }
-  if (searchParams.search) {
-    where.OR = [
-      { title: { contains: searchParams.search, mode: "insensitive" } },
-      { location: { contains: searchParams.search, mode: "insensitive" } },
-      { city: { contains: searchParams.search, mode: "insensitive" } },
-    ];
-  }
-  if (searchParams.type && searchParams.type !== "all") {
-    where.type = searchParams.type;
-  }
-  if (searchParams.minPrice || searchParams.maxPrice) {
-    where.price = {};
-    if (searchParams.minPrice) {
-      (where.price as Record<string, number>).gte = parseFloat(
-        searchParams.minPrice
-      );
-    }
-    if (searchParams.maxPrice) {
-      (where.price as Record<string, number>).lte = parseFloat(
-        searchParams.maxPrice
-      );
-    }
-  }
-  if (searchParams.minGuests) {
-    where.maxGuests = { gte: parseInt(searchParams.minGuests) };
-  }
-  if (searchParams.amenities) {
-    where.amenities = { hasEvery: searchParams.amenities.split(",") };
-  }
-
-  const [allRooms, total, cities] = await Promise.all([
-    prisma.room.findMany({
-      where,
-      include: {
-        reviews: {
-          select: { rating: true },
-        },
-      },
-      orderBy: [{ createdAt: "desc" }],
-    }),
-    prisma.room.count({ where }),
-    prisma.room.findMany({
-      where: { isActive: true, status: "AVAILABLE" },
-      select: { city: true },
-      distinct: ["city"],
-    }),
-  ]);
-
-  const sortedRooms = bubbleSortRooms(allRooms, sortBy);
-  const startIndex = (page - 1) * limit;
-  const paginatedRooms = sortedRooms.slice(startIndex, startIndex + limit);
-
-  return {
-    rooms: paginatedRooms,
-    total,
-    totalPages: Math.ceil(total / limit),
-    currentPage: page,
-    sortBy,
-    cities: cities.map((c) => c.city),
-  };
-}
 
 function RoomsSkeleton() {
   return (
@@ -118,10 +30,10 @@ function RoomsSkeleton() {
 export default async function RoomsPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<RoomSearchParams>;
 }) {
   const params = await searchParams;
-  const { rooms, total, totalPages, currentPage, cities, sortBy } = await getRooms(
+  const { rooms, total, totalPages, currentPage, cities, sortBy } = await getRoomSearchResults(
     params
   );
 
