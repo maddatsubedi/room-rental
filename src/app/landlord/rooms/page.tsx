@@ -145,7 +145,7 @@ export default async function LandlordRoomsPage() {
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div>
                       <span className="text-lg font-bold">{formatCurrency(room.price)}</span>
-                      <span className="text-gray-500">/night</span>
+                      <span className="text-gray-500">/month</span>
                     </div>
                     <p className="text-sm text-gray-500">
                       {room._count.bookings} booking{room._count.bookings !== 1 ? "s" : ""}

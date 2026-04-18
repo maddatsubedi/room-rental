@@ -173,7 +173,7 @@ export default async function LandlordDashboardPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{room.title}</p>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>{formatCurrency(room.price)}/night</span>
+                          <span>{formatCurrency(room.price)}/month</span>
                           <span>•</span>
                           <span>{room._count.bookings} bookings</span>
                         </div>

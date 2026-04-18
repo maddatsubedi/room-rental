@@ -187,7 +187,7 @@ export default async function AdminRoomsPage({
                           <p className="text-sm text-gray-500">{room.landlord.email}</p>
                         </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(room.price)}/night</TableCell>
+                      <TableCell>{formatCurrency(room.price)}/month</TableCell>
                       <TableCell>
                         <Badge variant={
                           room.status === "AVAILABLE" ? "default" :
