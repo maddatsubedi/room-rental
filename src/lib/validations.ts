@@ -80,6 +80,12 @@ const emptyStringToUndefined = (value: unknown) => {
   return trimmed === "" ? undefined : trimmed;
 };
 
+const emptyStringToNull = (value: unknown) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+};
+
 // User update schema
 export const userUpdateSchema = z.object({
   name: z.preprocess(
@@ -91,12 +97,16 @@ export const userUpdateSchema = z.object({
     z.string().email("Enter a valid email address")
   ).optional(),
   phone: z.preprocess(
-    emptyStringToUndefined,
-    z.string().regex(/^[+0-9()\-\s]{7,20}$/, "Enter a valid phone number")
+    emptyStringToNull,
+    z
+      .union([
+        z.string().regex(/^[+0-9()\-\s]{7,20}$/, "Enter a valid phone number"),
+        z.null(),
+      ])
   ).optional(),
   image: z.preprocess(
-    emptyStringToUndefined,
-    z.string().url("Profile image must be a valid URL")
+    emptyStringToNull,
+    z.union([z.string().url("Profile image must be a valid URL"), z.null()])
   ).optional(),
   isActive: z.boolean().optional(),
   role: z.enum(["ADMIN", "LANDLORD", "USER"]).optional(),

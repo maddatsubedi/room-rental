@@ -27,10 +27,16 @@ export async function updateUser(userId: string, formData: FormData) {
   if (email) data.email = email;
 
   const phone = formData.get("phone");
-  if (phone) data.phone = phone;
+  if (phone !== null) {
+    const phoneValue = (phone as string).trim();
+    data.phone = phoneValue === "" ? null : phoneValue;
+  }
 
   const image = formData.get("image");
-  if (image) data.image = image;
+  if (image !== null) {
+    const imageValue = (image as string).trim();
+    data.image = imageValue === "" ? null : imageValue;
+  }
 
   // Only admin can update these fields
   if (session.user.role === "ADMIN") {

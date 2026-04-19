@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserLayout } from "@/components/layout/user-layout";
@@ -20,11 +20,50 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
+    name: "",
+    email: "",
     phone: "",
-    image: session?.user?.image || "",
+    image: "",
   });
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: session.user.name || "",
+      email: session.user.email || "",
+      image: session.user.image || "",
+    }));
+
+    let isMounted = true;
+
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`/api/users/${session.user.id}`);
+        if (!response.ok) return;
+
+        const result = await response.json();
+        if (!result?.success || !isMounted) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          name: result.data?.name || prev.name,
+          email: result.data?.email || prev.email,
+          phone: result.data?.phone || "",
+          image: result.data?.image || "",
+        }));
+      } catch {
+        // Keep existing form state if the profile request fails.
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session?.user?.id, session?.user?.name, session?.user?.email, session?.user?.image]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,10 +78,10 @@ export default function ProfilePage() {
     setErrors({});
 
     const payload = {
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      image: formData.image,
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim() === "" ? null : formData.phone.trim(),
+      image: formData.image.trim() === "" ? null : formData.image.trim(),
     };
 
     const validated = userUpdateSchema.safeParse(payload);
@@ -73,13 +112,23 @@ export default function ProfilePage() {
         throw new Error(data.error || "Failed to update profile");
       }
 
+      const updatedUser = data.data;
+
+      setFormData((prev) => ({
+        ...prev,
+        name: updatedUser?.name || prev.name,
+        email: updatedUser?.email || prev.email,
+        phone: updatedUser?.phone || "",
+        image: updatedUser?.image || "",
+      }));
+
       // Update session
       await update({
         ...session,
         user: {
           ...session?.user,
-          name: formData.name,
-          image: formData.image,
+          name: updatedUser?.name || formData.name,
+          image: updatedUser?.image || undefined,
         },
       });
 

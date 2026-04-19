@@ -105,10 +105,21 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
 
     // Regular fields anyone can update for themselves
-    if (validatedFields.data.name) updateData.name = validatedFields.data.name;
-    if (validatedFields.data.email) updateData.email = validatedFields.data.email.toLowerCase();
-    if (validatedFields.data.phone) updateData.phone = validatedFields.data.phone;
-    if (validatedFields.data.image) updateData.image = validatedFields.data.image;
+    if (typeof validatedFields.data.name === "string") {
+      updateData.name = validatedFields.data.name;
+    }
+
+    if (typeof validatedFields.data.email === "string") {
+      updateData.email = validatedFields.data.email.toLowerCase();
+    }
+
+    if ("phone" in validatedFields.data) {
+      updateData.phone = validatedFields.data.phone ?? null;
+    }
+
+    if ("image" in validatedFields.data) {
+      updateData.image = validatedFields.data.image ?? null;
+    }
 
     // Admin-only fields
     if (session.user.role === "ADMIN") {
